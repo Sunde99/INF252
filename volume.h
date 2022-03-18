@@ -70,6 +70,11 @@ public:
         return m_visibleBlockPositions;
     };
 
+    QOpenGLTexture & volumeTexture()
+    {
+        return m_volumeTexture;
+    };
+
 signals:
 
 private:

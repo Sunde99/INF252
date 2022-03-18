@@ -2,8 +2,11 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QVector>
 #include "environment.h"
 #include "renderwidget.h"
+
+class QHBoxLayout;
 
 class MainWindow : public QMainWindow
 {
@@ -15,9 +18,14 @@ public:
 
 public slots:
     void fileOpen();
+    void addWidget();
+    void removeWidget();
 
 private:
     Environment *m_environment;
-    RenderWidget *m_renderWidget;
+    QWidget *m_mainWidget;
+    QHBoxLayout *m_layout;
+    QVector<RenderWidget*> m_renderWidgets;
+    QOpenGLWidget *m_hiddenWidget;
 };
 #endif // MAINWINDOW_H

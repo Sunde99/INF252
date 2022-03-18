@@ -4,5 +4,8 @@
         <file>cube-vs.glsl</file>
         <file>block-fs.glsl</file>
         <file>block-vs.glsl</file>
+        <file>histogram-vs.glsl</file>
+        <file>histogram-fs.glsl</file>
+        <file>volume-cs.glsl</file>
     </qresource>
 </RCC>
