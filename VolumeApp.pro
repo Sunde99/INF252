@@ -15,6 +15,7 @@ SOURCES += \
     geometry.cpp \
     main.cpp \
     mainwindow.cpp \
+    marchingcubes.cpp \
     renderwidget.cpp \
     volume.cpp
 
@@ -22,8 +23,12 @@ HEADERS += \
     environment.h \
     geometry.h \
     mainwindow.h \
+    marchingcubes.h \
     renderwidget.h \
     volume.h
+
+FORMS += \
+    mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -35,4 +40,4 @@ RESOURCES += \
 
 DISTFILES += \
     cube-fs.glsl \
-    cube-vs.glsl
+   cube-vs.glsl
