@@ -11,19 +11,19 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    crosssectionrenderer.cpp \
     environment.cpp \
     geometry.cpp \
     main.cpp \
     mainwindow.cpp \
-    marchingcubes.cpp \
     renderwidget.cpp \
     volume.cpp
 
 HEADERS += \
+    crosssectionrenderer.h \
     environment.h \
     geometry.h \
     mainwindow.h \
-    marchingcubes.h \
     renderwidget.h \
     volume.h
 
@@ -43,4 +43,6 @@ DISTFILES += \
     cube-vs.glsl \
     histogram-fs.glsl \
     histogram-vs.glsl \
+    image-slice-fs.glsl \
+    screen-vs.glsl \
     volume-cs.glsl

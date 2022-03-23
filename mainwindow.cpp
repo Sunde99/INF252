@@ -4,6 +4,7 @@
 #include <QAction>
 #include <QFileDialog>
 #include <QHBoxLayout>
+#include "crosssectionrenderer.h"
 
 MainWindow::MainWindow(Environment *env, QWidget *parent)
     : QMainWindow(parent), m_environment(env)
@@ -17,6 +18,7 @@ MainWindow::MainWindow(Environment *env, QWidget *parent)
 
     setCentralWidget(m_mainWidget);
     addWidget();
+
 
     QMenu *fileMenu = new QMenu("File");
 
@@ -38,7 +40,10 @@ MainWindow::MainWindow(Environment *env, QWidget *parent)
 
     menuBar()->addMenu(fileMenu);
 
-
+    //CROSS SECTION
+    CrossSectionRenderer *widget = new CrossSectionRenderer(m_environment, m_mainWidget);
+    m_layout->addWidget(widget);
+    widget->show();
 }
 
 MainWindow::~MainWindow()
