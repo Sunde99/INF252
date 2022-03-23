@@ -15,7 +15,7 @@ void main(void)
     gl_Position = modelViewProjectionMatrix*vec4(blockCoordinates,1.0);
 
     volumePosition = blockCoordinates;
-
+    
     // here we convert from volume coordinates ([0,0,0]-[width-1,height-1,depth-1]) to texture coordinates ([0,0,0]--[1,1,1])
     texturePosition = (volumePosition.xyz+vec3(0.5))/(volumeSize-vec3(1.0));
 }

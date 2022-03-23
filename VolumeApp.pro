@@ -1,5 +1,5 @@
 QT       += core gui
-LIBS += -lOpenGL32
+#LIBS += -lOpenGL32
 
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets openglwidgets
@@ -40,4 +40,7 @@ RESOURCES += \
 
 DISTFILES += \
     cube-fs.glsl \
-   cube-vs.glsl
+    cube-vs.glsl \
+    histogram-fs.glsl \
+    histogram-vs.glsl \
+    volume-cs.glsl

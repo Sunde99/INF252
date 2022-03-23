@@ -14,6 +14,9 @@ class RenderWidget : public QOpenGLWidget, protected QOpenGLExtraFunctions
 public:
     RenderWidget(Environment *env, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 
+public slots:
+    virtual void doCompute();
+
 protected:
     virtual void mousePressEvent(QMouseEvent *event);
     virtual void mouseMoveEvent(QMouseEvent *event);
@@ -26,10 +29,16 @@ private:
     Environment * m_environment;
     QOpenGLShaderProgram m_cubeProgram;
     QOpenGLShaderProgram m_blockProgram;
+    QOpenGLShaderProgram m_histogramProgram;
+    QOpenGLShaderProgram m_computeProgram;
     QMatrix4x4 m_projectionMatrix;
     QMatrix4x4 m_modelViewMatrix;
     qreal m_currentX,m_currentY;
     qreal m_previousX,m_previousY;
+    QOpenGLTexture m_volumeTexture;
+    QOpenGLTexture m_histogramTexture;
+    bool m_showCompute;
+
 };
 
 #endif // RENDERWIDGET_H

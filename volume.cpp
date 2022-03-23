@@ -108,7 +108,7 @@ void Volume::bind()
 
         m_volumeTexture.setBorderColor(0,0,0,0);
         m_volumeTexture.setWrapMode(QOpenGLTexture::ClampToBorder);
-        m_volumeTexture.setFormat(QOpenGLTexture::R16F);
+        m_volumeTexture.setFormat(QOpenGLTexture::R32F);
         m_volumeTexture.setMinificationFilter(QOpenGLTexture::Linear);
         m_volumeTexture.setMagnificationFilter(QOpenGLTexture::Linear);
         m_volumeTexture.setAutoMipMapGenerationEnabled(false);
@@ -151,7 +151,7 @@ void Volume::buildTree()
             for (int x=0;x<m_width;x+=BLOCKDIMENSION)
             {
                 m_blocks.push_back(VolumeNode(*this,x,y,z));
-                std::cout << "Block " << x << "," << y << "," << z << " : " << m_blocks.back().minimum() << " -- " << m_blocks.back().maximum() << std::endl;
+                //std::cout << "Block " << x << "," << y << "," << z << " : " << m_blocks.back().minimum() << " -- " << m_blocks.back().maximum() << std::endl;
             }
         }
     }
@@ -209,7 +209,7 @@ void Volume::classifyTree(const QVector<float> & summedAreaTable)
                 int volumeY = blockY*BLOCKDIMENSION;
                 int volumeZ = blockZ*BLOCKDIMENSION;
 
-                std::cout << "Block " << volumeX << "," << volumeY << "," << volumeZ << " : " << m_blocksVisible[i] << std::endl;
+                //std::cout << "Block " << volumeX << "," << volumeY << "," << volumeZ << " : " << m_blocksVisible[i] << std::endl;
                 m_visibleBlockPositions[blockPositionIndex] = QVector3D(volumeX,volumeY,volumeZ);
                 blockPositionIndex++;
             }
@@ -220,4 +220,3 @@ void Volume::classifyTree(const QVector<float> & summedAreaTable)
         std::cout << "Visible Blocks: " << m_visibleBlockPositions.size() << std::endl;
     }
 }
-

@@ -6,8 +6,13 @@ out vec4 fragmentColor;
 
 uniform sampler3D volumeTexture;
 
+float linearInterpolation(float a, float b, float t){
+    return a + ((b-a)*t);
+}
+
 void main(void)
 {
     float volumeValue = texture(volumeTexture,vec3(texturePosition.xyz)).r;
-    fragmentColor = vec4(texturePosition.xyz*(0.5+volumeValue*0.5),1.0);
+
+    fragmentColor = vec4(volumeValue);//vec4(texturePosition.xyz*(0.5+volumeValue*0.5),1.0);
 }
