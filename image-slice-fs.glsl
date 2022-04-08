@@ -2,26 +2,39 @@
 
 in vec2 fragCoord;
 
+uniform sampler1D transferFunction;
 uniform sampler3D volumeTexture;
-uniform mat4 MVP = mat4(1.0f);
+uniform mat4 MVP;
+uniform float depth;
+uniform int orientation;
 uniform vec3 volumeScale = vec3(1., 1., 1.);
 uniform vec3 volumeSpacing = vec3(1., 1., 1.);
 
 out vec4 fragColor;
 
-void main(void)
-{
-    const vec2 uv = fragCoord * 0.5 + 0.5;
-        vec4 slice = MVP * vec4(fragCoord, .0, 1.);
-        slice /= slice.w;
+/*
+    Returns the texture coordinates to be used in the volume lookup, based on the depth, orientation, and the fragCoord
+*/
+vec3 getTexCoord(vec2 fragCoordScaled){
+    vec3 texCoords;
+    switch(orientation){
+    case 0:
+        return vec3(fragCoordScaled,depth);
+    case 1:
+        return vec3(fragCoordScaled.x,depth,fragCoordScaled.y);
+    case 2:
+        return vec3(depth,fragCoordScaled);
+    default:
+        return vec3(0);
+    }
+}
 
+void main(void){
+    // Scale the fragCoord so texture is centered and fills the screen
+    vec2 fragCoordScaled = (fragCoord * 0.5) + 0.5;
 
-        // Convert [-1, 1] -> [0, 1]
-        vec3 texCoords = slice.xyz * 0.5 + 0.5;
-        // Apply volume spacing: [0, 1] -> [-0.5, 0.5] -> volumeSpacing * [-0.5, 0.5] -> 0.5 + volumeSpacing * [-0.5, 0.5]
-        texCoords = volumeSpacing * (texCoords - 0.5) / volumeScale + 0.5;
-        const float density = texture(volumeTexture, texCoords).r;
-        //const vec3 color = texture(transferFunction, density).rgb;
+    vec3 texCoord = getTexCoord(fragCoordScaled);
 
-        fragColor = vec4(1,0,0,1);//vec4(density);//vec4(color * density, 1.);
+    float depth = texture(volumeTexture,texCoord).r;
+    fragColor = vec4(depth);
 }

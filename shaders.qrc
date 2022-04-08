@@ -9,5 +9,6 @@
         <file>volume-cs.glsl</file>
         <file>screen-vs.glsl</file>
         <file>image-slice-fs.glsl</file>
+        <file>raymarching-fs.glsl</file>
     </qresource>
 </RCC>

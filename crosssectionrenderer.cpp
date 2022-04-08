@@ -18,6 +18,7 @@ CrossSectionRenderer::CrossSectionRenderer(Environment *env, QWidget *parent)
     sliderOrientation->setValue(0);
     sliderOrientation->move(150,0);
     connect(sliderOrientation,SIGNAL(valueChanged(int)),this,SLOT(sliderOrientationChanged(int)));
+    m_projectionMatrix.setToIdentity();
 }
 
 void CrossSectionRenderer::mousePressEvent(QMouseEvent *event){
@@ -63,104 +64,19 @@ void CrossSectionRenderer::resizeGL(int w, int h){
 }
 
 void CrossSectionRenderer::drawSlice(){
-    const int sliderValue = m_slidervalue;
-    //fix for non-zero min
-    const float depth = float(sliderValue)/100.f;
+
     glBegin(GL_QUADS);
-    switch (m_sliderOrientation){
-        case 0:
-            glVertex2f(-1.f,-1.f);
-            glTexCoord3d(
-                depth,
-                0.0f,
-                0.0f
-            );
 
-            glVertex2f(1.f,-1.f);
-            glTexCoord3d(
-                depth,
-                .0f,
-                1.f
-            );
+    glVertex2f(-1.f,-1.f);
+    glVertex2f(1.f,-1.f);
 
-            glVertex2f(1.f,1.f);
-            glTexCoord3d(
-                depth,
-                1.0f,
-                1.0f
-            );
-
-            glVertex2f(-1.f,1.f);
-            glTexCoord3d(
-                depth,
-                1.0f,
-                0.0f
-            );
-            break;
-        case 1:
-            glVertex2f(-1.f,-1.f);
-            glTexCoord3d(
-                0.0f,
-                depth,
-                0.0f
-            );
-
-            glVertex2f(1.f,-1.f);
-            glTexCoord3d(
-                .0f,
-                depth,
-                1.f
-            );
-
-            glVertex2f(1.f,1.f);
-            glTexCoord3d(
-                1.0f,
-                depth,
-                1.0f
-            );
-
-            glVertex2f(-1.f,1.f);
-            glTexCoord3d(
-                1.0f,
-                depth,
-                0.0f
-            );
-            break;
-        case 2:
-            glVertex2f(-1.f,-1.f);
-            glTexCoord3d(
-                0.0f,
-                0.0f,
-                depth
-            );
-
-            glVertex2f(1.f,-1.f);
-            glTexCoord3d(
-                .0f,
-                1.f,
-                depth
-            );
-
-            glVertex2f(1.f,1.f);
-            glTexCoord3d(
-                1.0f,
-                1.0f,
-                depth
-            );
-
-            glVertex2f(-1.f,1.f);
-            glTexCoord3d(
-                1.0f,
-                0.0f,
-                depth
-            );
-        break;
-    }
+    glVertex2f(1.f,1.f);
+    glVertex2f(-1.f,1.f);
     glEnd();
 }
 
 void CrossSectionRenderer::paintGL(){
-    glClearColor(1.0f,1.0f,1.0f,1.0f);
+    glClearColor(1.0f,0.0f,1.0f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glMatrixMode(GL_PROJECTION);
@@ -174,10 +90,34 @@ void CrossSectionRenderer::paintGL(){
 
     glColor4f(1.0f,1.0f,1.0f,1.0f);
 
+    // this matrix converts from volume coordinates ([0,0,0]-[width-1,height-1,depth-1]) to our unit cube coordinates [-1,-1,-1]-[1,1,1]
+    QMatrix4x4 volumeToUnitCoordinates;
+    volumeToUnitCoordinates.translate(-1.0f,-1.0f,-1.0f);
+    volumeToUnitCoordinates.scale(2.0f);
+    volumeToUnitCoordinates.scale(1.0f/float(m_environment->volume()->width()),1.0f/float(m_environment->volume()->height()),1.0f/float(m_environment->volume()->depth()));
+
+    QMatrix4x4 modelViewProjectionMatrix = m_projectionMatrix*m_modelViewMatrix*volumeToUnitCoordinates;
+    QVector3D blockSize = QVector3D(float(BLOCKDIMENSION),float(BLOCKDIMENSION),float(BLOCKDIMENSION));
+    QVector3D volumeSize = QVector3D(float(m_environment->volume()->width()),float(m_environment->volume()->height()),float(m_environment->volume()->depth()));
+
+
+    m_crosssectionprogram.bind();
+    glActiveTexture(GL_TEXTURE0);
+    m_crosssectionprogram.setUniformValue("volumeTexture",0);
+
     glEnable(GL_TEXTURE_3D);
     m_environment->volume()->bind();
+    m_crosssectionprogram.setUniformValue("MVP",modelViewProjectionMatrix.inverted());
+    m_crosssectionprogram.setUniformValue("volumeSpacing",QVector3D(1,1,1));
+    m_crosssectionprogram.setUniformValue("volumeScale",volumeSize);
+    const int sliderValue = m_slidervalue;
+    //fix for non-zero min
+    const float depth = float(sliderValue)/100.f;
+    m_crosssectionprogram.setUniformValue("depth",depth);
+    m_crosssectionprogram.setUniformValue("orientation",m_sliderOrientation);
 
     drawSlice();
+    m_crosssectionprogram.release();
 }
 
 QVector3D arcballVector(qreal x, qreal y);
