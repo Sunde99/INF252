@@ -2,8 +2,8 @@
 
 in vec2 fragCoord;
 
-uniform sampler1D transferFunction;
-uniform sampler3D volumeTexture;
+layout(binding=0) uniform sampler3D volumeTexture;
+layout(binding=1) uniform sampler1D transferFunction;
 uniform mat4 MVP;
 uniform float depth;
 uniform int orientation;

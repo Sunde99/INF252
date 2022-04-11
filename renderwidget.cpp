@@ -3,66 +3,46 @@
 #include <QMouseEvent>
 #include <QtMath>
 
-static GLuint Create1DTexture() {
-    GLuint textureId_;
-    GLenum errorEnum = glGetError();
-    if (errorEnum != GL_NO_ERROR){
-        qDebug() << "hello" << errorEnum;
-    }
-    // generate the specified number of texture objects
-    glGenTextures(1, &textureId_);
-    assert(glGetError() == GL_NO_ERROR);
-
-    // bind texture
-    glBindTexture(GL_TEXTURE_1D, textureId_);
-    assert(glGetError() == GL_NO_ERROR);
-
-    // tells OpenGL how the data that is going to be uploaded is aligned
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    assert(glGetError() == GL_NO_ERROR);
-
-    float data[] = {
-        1.0f, 0.0f, 0.0f, 1.0f,
-        1.0f, 0.0f, 0.0f, 1.0f,
-        1.0f, 0.0f, 0.0f, 1.0f
-    };
-
-    glTexImage1D(
-        GL_TEXTURE_1D,      // Specifies the target texture. Must be GL_TEXTURE_1D or GL_PROXY_TEXTURE_1D.
-        0,                  // Specifies the level-of-detail number. Level 0 is the base image level. Level n is the nth mipmap reduction image.
-        GL_RGBA32F,
-        3,
-        0,                  // border: This value must be 0.
-        GL_RGBA,
-        GL_FLOAT,
-        data
-    );
-    assert(glGetError() == GL_NO_ERROR);
-
-    // texture sampling/filtering operation.
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    assert(glGetError() == GL_NO_ERROR);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    assert(glGetError() == GL_NO_ERROR);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    assert(glGetError() == GL_NO_ERROR);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    assert(glGetError() == GL_NO_ERROR);
-
-    glBindTexture(GL_TEXTURE_1D, 0);
-    assert(glGetError() == GL_NO_ERROR);
-
-    return textureId_;
-}
 
 
 
-RenderWidget::RenderWidget(Environment *env, QWidget *parent, Qt::WindowFlags f) : QOpenGLWidget(parent,f), m_environment(env), m_volumeTexture(QOpenGLTexture::Target3D), m_histogramTexture(QOpenGLTexture::Target2D)
+RenderWidget::RenderWidget(Environment *env, QWidget *parent, Qt::WindowFlags f) :
+    QOpenGLWidget(parent,f),
+    m_environment(env),
+    m_volumeTexture(QOpenGLTexture::Target3D),
+    m_histogramTexture(QOpenGLTexture::Target2D),
+    m_transferFunctionTexture(QOpenGLTexture::Target1D)
 {
     m_modelViewMatrix.setToIdentity();
     m_modelViewMatrix.translate(0.0, 1.0, -3.0*sqrt(3.0));
     m_showCompute = false;
-    m_transferFunctionTexture = Create1DTexture();
+}
+
+void RenderWidget::createTransferFunction(){
+    if (m_transferFunctionTexture.isCreated())
+        m_transferFunctionTexture.destroy();
+    const int width = 5;
+    const int height = 1;
+    const int depth = 4;
+
+    float vecData[width*height*depth] = {
+        10.f, 0.f, 0.f, .0,
+        10.f, 10.f, 0.f, .4,
+        0.f, 10.f, 0.f, .6,
+        0.f, 10.f, 10.f, .8,
+        0.f, 0.f, 10.f, 1.
+    };
+    m_transferFunctionTexture.setBorderColor(0,0,0,0);
+    m_transferFunctionTexture.setWrapMode(QOpenGLTexture::ClampToEdge);
+    m_transferFunctionTexture.setFormat(QOpenGLTexture::RGBA16F);
+    m_transferFunctionTexture.setMinificationFilter(QOpenGLTexture::Linear);
+    m_transferFunctionTexture.setMagnificationFilter(QOpenGLTexture::Linear);
+    m_transferFunctionTexture.setAutoMipMapGenerationEnabled(false);
+    m_transferFunctionTexture.setSize(width,height,depth);
+    m_transferFunctionTexture.allocateStorage();
+
+    const auto data = reinterpret_cast<void*>(vecData);
+    m_transferFunctionTexture.setData(0,0,0,width,height,depth,QOpenGLTexture::RGBA,QOpenGLTexture::Float32,data);
 }
 
 void RenderWidget::mousePressEvent(QMouseEvent *event)
@@ -165,6 +145,8 @@ void RenderWidget::initializeGL()
     m_histogramTexture.setAutoMipMapGenerationEnabled(false);
     m_histogramTexture.setSize(256,256);
     m_histogramTexture.allocateStorage();
+
+    createTransferFunction();
 }
 
 void RenderWidget::doCompute()
@@ -219,8 +201,7 @@ void RenderWidget::resizeGL(int w, int h)
 
 void RenderWidget::paintGL()
 {
-//    glClearColor(1.0f,1.0f,1.0f,1.0f);
-    glClearColor(0.0f,0.0f,0.0f,0.0f);
+    glClearColor(1.0f,1.0f,1.0f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //BRUH
@@ -242,7 +223,7 @@ void RenderWidget::paintGL()
     m_raymarchingProgram.setUniformValue("volumeSpacing",QVector3D(1,1,1));
     m_raymarchingProgram.setUniformValue("volumeScale",volumeSize);
 
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE0 + 0);
     m_raymarchingProgram.setUniformValue("volumeTexture",0);
 
     m_environment->volume()->bind();
@@ -255,9 +236,9 @@ void RenderWidget::paintGL()
     m_raymarchingProgram.setAttributeBuffer(location,GL_FLOAT,0,3,sizeof(QVector3D));
 
     GLuint samplerLocation = m_raymarchingProgram.uniformLocation("transferFunction");
-    glUniform1i(samplerLocation, 0);
-    glActiveTexture(GL_TEXTURE0 + 0);
-    glBindTexture(GL_TEXTURE_1D, m_transferFunctionTexture);
+    glUniform1i(samplerLocation, 1);
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_1D, m_transferFunctionTexture.textureId());
 
     Geometry::instance()->drawQuad();
 

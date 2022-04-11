@@ -1,6 +1,6 @@
 #version 430
 
-uniform int RAYMARCH_STEPS = 100;
+uniform int RAYMARCH_STEPS = 1000;
 uniform float EPSILON = 0.001;
 
 in vec2 fragCoord;
@@ -15,8 +15,7 @@ uniform vec3 lightDir = vec3(1.0, 0.0, 0.0);
 out vec4 fragColor;
 
 // https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
-vec2 boxIntersection(vec3 ro, vec3 rd, vec3 boxSize)
-{
+vec2 boxIntersection(vec3 ro, vec3 rd, vec3 boxSize){
     vec3 m = 1.0/rd;
     vec3 n = m*ro;
     vec3 k = abs(m)*boxSize;
@@ -29,16 +28,13 @@ vec2 boxIntersection(vec3 ro, vec3 rd, vec3 boxSize)
     return vec2( tN, tF );
 }
 
-vec4 transferFunctionBruh(float d){
-    return vec4(-d);
-}
-
-vec4 tf(vec3 p) {
+vec4 tf(vec3 p){
     p /= volumeScale * 2.0; // Scale p to [-scale, scale] / 2
     p /= volumeSpacing;
     p += 0.5; // Shift uv's so we go from [-0.5, 0.5] to [0, 1.0]
     float d = texture(volumeTexture, p).r;
-    return vec4(-d);//texture(transferFunction, d);
+    vec4 tex = texture(transferFunction, d);
+    return tex;
 }
 
 vec3 gradient(vec3 p) {
@@ -82,17 +78,10 @@ void main(void)
             fragColor.rgb += (1.0 - fragColor.a) * phong * density;
             fragColor.a += density;
 
-            if (fragColor.a > 1.f){
+            if (1.0 < fragColor.a) {
                 return;
             }
             depth += stepSize;
         }
-    }
-    else {
-        gl_FragDepth = 1;
-    }
-    if (fragColor.a > 0.001f){
-        gl_FragDepth = 1;
-        fragColor.rgb *= 2;
     }
 }
