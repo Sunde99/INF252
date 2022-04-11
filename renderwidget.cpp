@@ -3,11 +3,46 @@
 #include <QMouseEvent>
 #include <QtMath>
 
-RenderWidget::RenderWidget(Environment *env, QWidget *parent, Qt::WindowFlags f) : QOpenGLWidget(parent,f), m_environment(env), m_volumeTexture(QOpenGLTexture::Target3D), m_histogramTexture(QOpenGLTexture::Target2D)
+
+
+
+RenderWidget::RenderWidget(Environment *env, QWidget *parent, Qt::WindowFlags f) :
+    QOpenGLWidget(parent,f),
+    m_environment(env),
+    m_volumeTexture(QOpenGLTexture::Target3D),
+    m_histogramTexture(QOpenGLTexture::Target2D),
+    m_transferFunctionTexture(QOpenGLTexture::Target1D)
 {
     m_modelViewMatrix.setToIdentity();
-    m_modelViewMatrix.translate(0.0, 0.0, -2.0*sqrt(3.0));
+    m_modelViewMatrix.translate(0.0, 1.0, -3.0*sqrt(3.0));
     m_showCompute = false;
+}
+
+void RenderWidget::createTransferFunction(){
+    if (m_transferFunctionTexture.isCreated())
+        m_transferFunctionTexture.destroy();
+    const int width = 5;
+    const int height = 1;
+    const int depth = 4;
+
+    float vecData[width*height*depth] = {
+        10.f, 0.f, 0.f, .0,
+        10.f, 10.f, 0.f, .4,
+        0.f, 10.f, 0.f, .6,
+        0.f, 10.f, 10.f, .8,
+        0.f, 0.f, 10.f, 1.
+    };
+    m_transferFunctionTexture.setBorderColor(0,0,0,0);
+    m_transferFunctionTexture.setWrapMode(QOpenGLTexture::ClampToEdge);
+    m_transferFunctionTexture.setFormat(QOpenGLTexture::RGBA16F);
+    m_transferFunctionTexture.setMinificationFilter(QOpenGLTexture::Linear);
+    m_transferFunctionTexture.setMagnificationFilter(QOpenGLTexture::Linear);
+    m_transferFunctionTexture.setAutoMipMapGenerationEnabled(false);
+    m_transferFunctionTexture.setSize(width,height,depth);
+    m_transferFunctionTexture.allocateStorage();
+
+    const auto data = reinterpret_cast<void*>(vecData);
+    m_transferFunctionTexture.setData(0,0,0,width,height,depth,QOpenGLTexture::RGBA,QOpenGLTexture::Float32,data);
 }
 
 void RenderWidget::mousePressEvent(QMouseEvent *event)
@@ -92,6 +127,15 @@ void RenderWidget::initializeGL()
 
     if (!m_computeProgram.link())
         qDebug() << "Could not link shader program!";
+    //Raymarching
+    if (!m_raymarchingProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/screen-vs.glsl"))
+        qDebug() << "Could not load vertex shader!";
+
+    if (!m_raymarchingProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/raymarching-fs.glsl"))
+        qDebug() << "Could not load fragment shader!";
+
+    if (!m_raymarchingProgram.link())
+        qDebug() << "Could not link shader program!";
 
     m_histogramTexture.setBorderColor(0,0,0,0);
     m_histogramTexture.setWrapMode(QOpenGLTexture::ClampToEdge);
@@ -101,6 +145,8 @@ void RenderWidget::initializeGL()
     m_histogramTexture.setAutoMipMapGenerationEnabled(false);
     m_histogramTexture.setSize(256,256);
     m_histogramTexture.allocateStorage();
+
+    createTransferFunction();
 }
 
 void RenderWidget::doCompute()
@@ -158,92 +204,7 @@ void RenderWidget::paintGL()
     glClearColor(1.0f,1.0f,1.0f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-/*
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-   // glColor4f(1.0f,0.0f,0.0f,1.0f);
-
-    glEnable(GL_TEXTURE_3D);
-    //m_environment->volume()->bind();
-
-
-
-    glBegin(GL_QUADS);
-    glVertex2f(-0.5f,-0.5f);
-    glTexCoord3d(0.0f,0.0f,0.5f);
-
-    glVertex2f(0.5f,-0.5f);
-    glTexCoord3d(1.0f,0.0f,0.5f);
-
-    glVertex2f(0.5f,0.5f);
-    glTexCoord3d(1.0f,1.0f,0.5f);
-
-    glVertex2f(-0.5f,0.5f);
-    glTexCoord3d(0.0f,1.0f,0.5f);
-
-    glEnd();
-*/
-/*
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-
-    QMatrix4x4 modelViewProjectionMatrix = m_projectionMatrix*m_modelViewMatrix;
-
-
-    m_cubeProgram.bind();
-    m_cubeProgram.setUniformValue("modelViewProjectionMatrix",modelViewProjectionMatrix);
-
-    glActiveTexture(GL_TEXTURE0);
-    m_cubeProgram.setUniformValue("volumeTexture",0);
-    m_environment->volume()->bind();
-
-    Geometry::instance()->bindCube(); // Geometry::instance()->bindQuad();
-
-    int location = m_cubeProgram.attributeLocation("vertexPosition");
-    m_cubeProgram.enableAttributeArray(location);
-    m_cubeProgram.setAttributeBuffer(location,GL_FLOAT,0,3,sizeof(QVector3D));
-
-    Geometry::instance()->drawCube(); // Geometry::instance()->drawQuad();
-
-    glActiveTexture(GL_TEXTURE0);
-    m_environment->volume()->release();
-
-    m_cubeProgram.release();
-*/
-/*
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-
-    QMatrix4x4 modelViewProjectionMatrix = m_projectionMatrix*m_modelViewMatrix;
-
-
-    m_histogramProgram.bind();
-    m_histogramProgram.setUniformValue("modelViewProjectionMatrix",modelViewProjectionMatrix);
-
-    glActiveTexture(GL_TEXTURE0);
-    m_histogramProgram.setUniformValue("volumeTexture",0);
-    m_environment->volume()->bind();
-
-    Geometry::instance()->bindQuad();
-
-    int location = m_histogramProgram.attributeLocation("vertexPosition");
-    m_histogramProgram.enableAttributeArray(location);
-    m_histogramProgram.setAttributeBuffer(location,GL_FLOAT,0,3,sizeof(QVector3D));
-
-    Geometry::instance()->drawQuad();
-
-    glActiveTexture(GL_TEXTURE0);
-    m_environment->volume()->release();
-
-    m_histogramProgram.release();
-*/
+    //BRUH
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
@@ -257,51 +218,41 @@ void RenderWidget::paintGL()
     QVector3D blockSize = QVector3D(float(BLOCKDIMENSION),float(BLOCKDIMENSION),float(BLOCKDIMENSION));
     QVector3D volumeSize = QVector3D(float(m_environment->volume()->width()),float(m_environment->volume()->height()),float(m_environment->volume()->depth()));
 
-    m_blockProgram.bind();
-    m_blockProgram.setUniformValue("modelViewProjectionMatrix",modelViewProjectionMatrix);
-    m_blockProgram.setUniformValue("blockSize",blockSize);
-    m_blockProgram.setUniformValue("volumeSize",volumeSize);
+    m_raymarchingProgram.bind();
+    m_raymarchingProgram.setUniformValue("MVP",modelViewProjectionMatrix.inverted());
+    m_raymarchingProgram.setUniformValue("volumeSpacing",QVector3D(1,1,1));
+    m_raymarchingProgram.setUniformValue("volumeScale",volumeSize);
 
-    glActiveTexture(GL_TEXTURE0);
-    m_blockProgram.setUniformValue("volumeTexture",0);
+    glActiveTexture(GL_TEXTURE0 + 0);
+    m_raymarchingProgram.setUniformValue("volumeTexture",0);
 
-    if (m_showCompute)
-        m_volumeTexture.bind();
-    else
-        m_environment->volume()->bind();
+    m_environment->volume()->bind();
 
-    Geometry::instance()->bindCube(); // Geometry::instance()->bindQuad();
+    Geometry::instance()->bindQuad();
 
-    int location = m_cubeProgram.attributeLocation("vertexPosition");
-    m_blockProgram.enableAttributeArray(location);
+    int location = m_raymarchingProgram.attributeLocation("vertexPosition");
+    m_raymarchingProgram.enableAttributeArray(location);
 
-    m_blockProgram.setAttributeBuffer(location,GL_FLOAT,0,3,sizeof(QVector3D));
+    m_raymarchingProgram.setAttributeBuffer(location,GL_FLOAT,0,3,sizeof(QVector3D));
 
-    // this is only a quick & dirty example of how to render our block geometry
-    // a much better way to do this without having to iterate on the CPU is
-    // to use instancing, see e.g. https://learnopengl.com/Advanced-OpenGL/Instancing
-    const QVector<QVector3D> & visibleBlockPositions = m_environment->volume()->visibleBlockPositions();
+    GLuint samplerLocation = m_raymarchingProgram.uniformLocation("transferFunction");
+    glUniform1i(samplerLocation, 1);
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_1D, m_transferFunctionTexture.textureId());
 
-    for (int i=0;i<visibleBlockPositions.size();i++)
-    {
-        m_blockProgram.setUniformValue("blockPosition",visibleBlockPositions[i]);
-        Geometry::instance()->drawCube(); // Geometry::instance()->drawQuad();
-    }
-
+    Geometry::instance()->drawQuad();
 
     glActiveTexture(GL_TEXTURE0);
 
-    if (m_showCompute)
-        m_volumeTexture.release();
-    else
-        m_environment->volume()->release();
+    m_environment->volume()->release();
 
-    m_blockProgram.release();
+    m_raymarchingProgram.release();
+    //BRUH
 
     glViewport(0,0,m_histogramTexture.width(),m_histogramTexture.height());
 
     m_histogramProgram.bind();
-    Geometry::instance()->bindQuad(); // Geometry::instance()->bindQuad();
+    Geometry::instance()->bindQuad();
 
     glBindImageTexture(0,m_histogramTexture.textureId(),0,GL_FALSE,0,GL_READ_ONLY,GL_R32UI);
 
@@ -313,7 +264,10 @@ void RenderWidget::paintGL()
     m_histogramProgram.release();
 
     m_histogramTexture.release();
+
 }
+
+
 
 QVector3D RenderWidget::arcballVector(qreal x, qreal y)
 {

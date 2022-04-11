@@ -23,6 +23,7 @@ protected:
     virtual void initializeGL();
     virtual void resizeGL(int w, int h);
     virtual void paintGL();
+    virtual void createTransferFunction();
     QVector3D arcballVector(qreal x, qreal y);
 
 private:
@@ -31,6 +32,7 @@ private:
     QOpenGLShaderProgram m_blockProgram;
     QOpenGLShaderProgram m_histogramProgram;
     QOpenGLShaderProgram m_computeProgram;
+    QOpenGLShaderProgram m_raymarchingProgram;
     QMatrix4x4 m_projectionMatrix;
     QMatrix4x4 m_modelViewMatrix;
     qreal m_currentX,m_currentY;
@@ -38,6 +40,7 @@ private:
     QOpenGLTexture m_volumeTexture;
     QOpenGLTexture m_histogramTexture;
     bool m_showCompute;
+    QOpenGLTexture m_transferFunctionTexture;
 
 };
 

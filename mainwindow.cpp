@@ -40,7 +40,7 @@ MainWindow::MainWindow(Environment *env, QWidget *parent)
 
     menuBar()->addMenu(fileMenu);
 
-    //CROSS SECTION
+//  CROSS SECTION
     CrossSectionRenderer *widget = new CrossSectionRenderer(m_environment, m_mainWidget);
     m_layout->addWidget(widget);
     widget->show();
