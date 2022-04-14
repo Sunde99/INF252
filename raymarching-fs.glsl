@@ -1,7 +1,7 @@
 #version 430
 
-uniform int RAYMARCH_STEPS = 1000;
-uniform float EPSILON = 0.001;
+uniform int RAYMARCH_STEPS = 100;
+uniform float EPSILON = 0.1;
 
 in vec2 fragCoord;
 

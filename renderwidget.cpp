@@ -16,22 +16,38 @@ RenderWidget::RenderWidget(Environment *env, QWidget *parent, Qt::WindowFlags f)
     m_modelViewMatrix.setToIdentity();
     m_modelViewMatrix.translate(0.0, 1.0, -3.0*sqrt(3.0));
     m_showCompute = false;
+    connect(m_environment,SIGNAL(signalTransferFunctionChanged()),this,SLOT(createTransferFunction()));
 }
 
+// SLOT
 void RenderWidget::createTransferFunction(){
+    qDebug() << "volume renderer got pinged!";
     if (m_transferFunctionTexture.isCreated())
         m_transferFunctionTexture.destroy();
+
+    const QVector<Node*> nodes = m_environment->getNodes();
     const int width = 5;
     const int height = 1;
     const int depth = 4;
 
+    float vecData[width*height*depth];
+
+    for (int i=0; i<width; i++){
+        QVector4D info = nodes.at(i)->getInfo();
+        for (int j=0; j<depth; j++){
+            vecData[i*4+j]=info[j];
+        }
+    }
+/*
+
     float vecData[width*height*depth] = {
-        10.f, 0.f, 0.f, .0,
-        10.f, 10.f, 0.f, .4,
+        0.f, 0.f, 10.f, .0,
+        0.f, 10.f, 10.f, .4,
         0.f, 10.f, 0.f, .6,
-        0.f, 10.f, 10.f, .8,
-        0.f, 0.f, 10.f, 1.
+        10.f, 10.f, 0.f, .6,
+        10.f, 0.f, 0.f, 1.0,
     };
+*/
     m_transferFunctionTexture.setBorderColor(0,0,0,0);
     m_transferFunctionTexture.setWrapMode(QOpenGLTexture::ClampToEdge);
     m_transferFunctionTexture.setFormat(QOpenGLTexture::RGBA16F);
@@ -196,7 +212,6 @@ void RenderWidget::resizeGL(int w, int h)
 
     m_projectionMatrix.setToIdentity();
     m_projectionMatrix.perspective(fov,aspectRatio,nearPlane,farPlane);
-
 }
 
 void RenderWidget::paintGL()

@@ -16,6 +16,7 @@ public:
 
 public slots:
     virtual void doCompute();
+    virtual void createTransferFunction();
 
 protected:
     virtual void mousePressEvent(QMouseEvent *event);
@@ -23,7 +24,7 @@ protected:
     virtual void initializeGL();
     virtual void resizeGL(int w, int h);
     virtual void paintGL();
-    virtual void createTransferFunction();
+
     QVector3D arcballVector(qreal x, qreal y);
 
 private:

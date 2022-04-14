@@ -1,11 +1,18 @@
 #include "environment.h"
+#include <vector>
 
 Environment::Environment(QObject *parent) : QObject(parent)
 {
     m_volume = new Volume(this);
+    m_nodes = QVector<Node*>();
 }
 
-Volume * Environment::volume()
-{
-    return m_volume;
+void Environment::setNodes(QVector<Node*> nodes){
+    m_nodes = nodes;
+}
+
+//SLOT
+void Environment::slotTransferFunctionChanged(){
+    qDebug() << "environment got pinged!";
+    emit signalTransferFunctionChanged();
 }

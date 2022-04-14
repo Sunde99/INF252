@@ -16,7 +16,10 @@ SOURCES += \
     geometry.cpp \
     main.cpp \
     mainwindow.cpp \
+    node.cpp \
     renderwidget.cpp \
+    transferfunctionrenderer.cpp \
+    transferfunctionwidget.cpp \
     volume.cpp
 
 HEADERS += \
@@ -24,7 +27,10 @@ HEADERS += \
     environment.h \
     geometry.h \
     mainwindow.h \
+    node.h \
     renderwidget.h \
+    transferfunctionrenderer.h \
+    transferfunctionwidget.h \
     volume.h
 
 FORMS += \
