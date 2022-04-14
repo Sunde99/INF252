@@ -11,9 +11,9 @@ class Node : public QWidget
     Q_OBJECT
 public:
     explicit Node(QWidget *parent = nullptr);
-    void setPos(QVector2D newPos);
+    void setPos(QVector2D newPos) {m_pos = newPos;};
+    void setColor(QColor newColor) {m_color = newColor;};
     void moveNode(QVector2D moveVec){setPos(m_pos + moveVec);};
-    void setColor(QColor newColor);
 
     QVector4D getInfo();
 

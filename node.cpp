@@ -15,6 +15,11 @@ Node::Node(QWidget *parent)
     );
 }
 
+/**
+ * @brief Node::paintEvent
+ * paints a circle and a colored square at the nodes position
+ * @param event
+ */
 void Node::paintEvent(QPaintEvent *event){
     setPos(m_pos);
     QPainter p;
@@ -26,11 +31,12 @@ void Node::paintEvent(QPaintEvent *event){
     p.end();
 }
 
-void Node::setPos(QVector2D newPos){
-    m_pos = newPos;
-}
-
 //SLOT
+/**
+ * @brief Node::updateValues
+ * SLOT
+ * is triggered when the Submit button in TransferFunctionWidget is clicked
+ */
 void Node::updateValues(){
     qDebug() << "node got pinged!";
     //MOVING THE YELLOW NODE MAKES THE TRANSFER FUNCTION NOT WORK SOMEHOW??s
@@ -44,6 +50,10 @@ void Node::updateValues(){
     qDebug() << "On Update: Node" << m_color.name() << ": " << m_pos.y();
 }
 
+/**
+ * @brief Node::getInfo
+ * @return the color and alpha value to be used in transfer function texture generation
+ */
 QVector4D Node::getInfo(){
     QVector4D info = QVector4D(
         m_color.redF(),
@@ -55,10 +65,12 @@ QVector4D Node::getInfo(){
     return info;
 }
 
-void Node::setColor(QColor newColor){
-    m_color = newColor;
-}
-
+/**
+ * @brief Node::mouseMoveEvent
+ * When clicking and dragging the mouse over a Node
+ * the node will follow the mouse within the container until the mouse is released
+ * @param event
+ */
 void Node::mouseMoveEvent(QMouseEvent *event){
     auto pos = this->pos() + event->pos();
     move(pos);

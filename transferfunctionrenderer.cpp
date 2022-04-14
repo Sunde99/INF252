@@ -45,20 +45,24 @@ TransferFunctionRenderer::TransferFunctionRenderer(Environment *env, QWidget *pa
         parent, SIGNAL(updateNodeValues()),
         this, SLOT(slotUpdateNodeValues())
     );
-    //TODO find out if having each node be a QWidget works
-    //put an array of nodes in environment.h so it is accessible
-    //fix renderwidget so it uses env->nodes()
-    //make a for loop that makes each node paint itself
-    //make each node able to be clicked
-    //make nodes moveable
     //think about how to add remove nodes (a +/- button at first?)
 }
 
+/**
+ * @brief TransferFunctionRenderer::slotUpdateNodeValues
+ * SLOT
+ * Trigggered when submit button is clicked in the TransferFunctionWidget
+ * Signals nodes to update their values
+ */
 void TransferFunctionRenderer::slotUpdateNodeValues(){
     qDebug() << "renderer got pinged!";
     emit signalUpdateNodeValues();
 }
-
+/**
+ * @brief TransferFunctionRenderer::paintEvent
+ * Paints the container which holds the transfer function nodes
+ * @param event
+ */
 void TransferFunctionRenderer::paintEvent(QPaintEvent * event){
     QRect fullWidgetRect = this->rect();
     QRect paintRect = QRect(0,0,fullWidgetRect.width()-1,fullWidgetRect.height()-1);

@@ -3,9 +3,6 @@
 #include <QMouseEvent>
 #include <QtMath>
 
-
-
-
 RenderWidget::RenderWidget(Environment *env, QWidget *parent, Qt::WindowFlags f) :
     QOpenGLWidget(parent,f),
     m_environment(env),
@@ -19,7 +16,12 @@ RenderWidget::RenderWidget(Environment *env, QWidget *parent, Qt::WindowFlags f)
     connect(m_environment,SIGNAL(signalTransferFunctionChanged()),this,SLOT(createTransferFunction()));
 }
 
-// SLOT
+
+/**
+ * @brief RenderWidget::createTransferFunction
+ * SLOT
+ * Generates transfer function texture to be used in shader
+ */
 void RenderWidget::createTransferFunction(){
     qDebug() << "volume renderer got pinged!";
     if (m_transferFunctionTexture.isCreated())
@@ -38,16 +40,7 @@ void RenderWidget::createTransferFunction(){
             vecData[i*4+j]=info[j];
         }
     }
-/*
 
-    float vecData[width*height*depth] = {
-        0.f, 0.f, 10.f, .0,
-        0.f, 10.f, 10.f, .4,
-        0.f, 10.f, 0.f, .6,
-        10.f, 10.f, 0.f, .6,
-        10.f, 0.f, 0.f, 1.0,
-    };
-*/
     m_transferFunctionTexture.setBorderColor(0,0,0,0);
     m_transferFunctionTexture.setWrapMode(QOpenGLTexture::ClampToEdge);
     m_transferFunctionTexture.setFormat(QOpenGLTexture::RGBA16F);
@@ -281,8 +274,6 @@ void RenderWidget::paintGL()
     m_histogramTexture.release();
 
 }
-
-
 
 QVector3D RenderWidget::arcballVector(qreal x, qreal y)
 {
