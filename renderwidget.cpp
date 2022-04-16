@@ -1,7 +1,9 @@
 #include "renderwidget.h"
-#include "geometry.h"
 #include <QMouseEvent>
 #include <QtMath>
+#include <QVector>
+#include "geometry.h"
+#include "transferfunctiontexturegenerator.h"
 
 RenderWidget::RenderWidget(Environment *env, QWidget *parent, Qt::WindowFlags f) :
     QOpenGLWidget(parent,f),
@@ -23,23 +25,17 @@ RenderWidget::RenderWidget(Environment *env, QWidget *parent, Qt::WindowFlags f)
  * Generates transfer function texture to be used in shader
  */
 void RenderWidget::createTransferFunction(){
-    qDebug() << "volume renderer got pinged!";
     if (m_transferFunctionTexture.isCreated())
         m_transferFunctionTexture.destroy();
 
     const QVector<Node*> nodes = m_environment->getNodes();
-    const int width = 5;
+    const int middleNodes = 100;
+    const int width = nodes.size() + middleNodes;
     const int height = 1;
     const int depth = 4;
 
-    float vecData[width*height*depth];
-
-    for (int i=0; i<width; i++){
-        QVector4D info = nodes.at(i)->getInfo();
-        for (int j=0; j<depth; j++){
-            vecData[i*4+j]=info[j];
-        }
-    }
+    TransferFunctionTextureGenerator generator = TransferFunctionTextureGenerator(nodes,middleNodes);
+    QVector<float> textureData = generator.generateTextureData();
 
     m_transferFunctionTexture.setBorderColor(0,0,0,0);
     m_transferFunctionTexture.setWrapMode(QOpenGLTexture::ClampToEdge);
@@ -50,8 +46,10 @@ void RenderWidget::createTransferFunction(){
     m_transferFunctionTexture.setSize(width,height,depth);
     m_transferFunctionTexture.allocateStorage();
 
-    const auto data = reinterpret_cast<void*>(vecData);
+    void *data = textureData.data();
     m_transferFunctionTexture.setData(0,0,0,width,height,depth,QOpenGLTexture::RGBA,QOpenGLTexture::Float32,data);
+
+    update();
 }
 
 void RenderWidget::mousePressEvent(QMouseEvent *event)
@@ -100,26 +98,6 @@ void RenderWidget::initializeGL()
 
     // initialize geometry
     Geometry::instance();
-
-    //Cube
-    if (!m_cubeProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/cube-vs.glsl"))
-        qDebug() << "Could not load vertex shader!";
-
-    if (!m_cubeProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/cube-fs.glsl"))
-        qDebug() << "Could not load fragment shader!";
-
-    if (!m_cubeProgram.link())
-        qDebug() << "Could not link shader program!";
-
-    //Block
-    if (!m_blockProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/block-vs.glsl"))
-        qDebug() << "Could not load vertex shader!";
-
-    if (!m_blockProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/block-fs.glsl"))
-        qDebug() << "Could not load fragment shader!";
-
-    if (!m_blockProgram.link())
-        qDebug() << "Could not link shader program!";
 
     //Histogram
     if (!m_histogramProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/histogram-vs.glsl"))

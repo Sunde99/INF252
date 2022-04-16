@@ -13,6 +13,5 @@ void Environment::setNodes(QVector<Node*> nodes){
 
 //SLOT
 void Environment::slotTransferFunctionChanged(){
-    qDebug() << "environment got pinged!";
     emit signalTransferFunctionChanged();
 }

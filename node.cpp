@@ -2,17 +2,29 @@
 #include <QPainter>
 #include <QRect>
 #include <QPoint>
+#include <QBrush>
+#include "transferfunctionrenderer.h"
 
-Node::Node(QWidget *parent)
-    : QWidget{parent}
+Node::Node(QWidget *parent, QVector2D pos, QColor color)
+    : QWidget{parent},
+      m_pos(pos),
+      m_color(color)
 {
-    setFixedSize(10,10);
-    setPos(QVector2D(0,0));
-    m_color = QColor(255,0,255);
+    move(m_pos.toPoint());
+
     connect(
         parent, SIGNAL(signalUpdateNodeValues()),
         this, SLOT(updateValues())
     );
+
+    connect(
+        this, SIGNAL(nodeSelected(Node*)),
+        parent, SLOT(slotNodeSelected(Node*))
+    );
+}
+
+QSize Node::sizeHint() const{
+    return QSize(15,15);
 }
 
 /**
@@ -23,9 +35,11 @@ Node::Node(QWidget *parent)
 void Node::paintEvent(QPaintEvent *event){
     setPos(m_pos);
     QPainter p;
+    QPen pen = QPen();
     QRect fullWidgetRect = this->rect();
     QRect paintRect = QRect(0,0,fullWidgetRect.width()-1,fullWidgetRect.height()-1);
     p.begin(this);
+    p.setPen(pen);
     p.fillRect(paintRect, m_color);
     p.drawArc(paintRect,0,5760);
     p.end();
@@ -38,7 +52,6 @@ void Node::paintEvent(QPaintEvent *event){
  * is triggered when the Submit button in TransferFunctionWidget is clicked
  */
 void Node::updateValues(){
-    qDebug() << "node got pinged!";
     //MOVING THE YELLOW NODE MAKES THE TRANSFER FUNCTION NOT WORK SOMEHOW??s
     QPoint newWidgetPos = this->pos();
     QRect parentRect = parentWidget()->rect();
@@ -47,7 +60,6 @@ void Node::updateValues(){
         float(newWidgetPos.y())/float(parentRect.height())
     );
     setPos(newPos);
-    qDebug() << "On Update: Node" << m_color.name() << ": " << m_pos.y();
 }
 
 /**
@@ -61,7 +73,6 @@ QVector4D Node::getInfo(){
         m_color.blueF(),
         m_pos.y()
     );
-    qDebug() << "Node" << m_color.name() << ": " << m_pos.y();
     return info;
 }
 
@@ -74,4 +85,14 @@ QVector4D Node::getInfo(){
 void Node::mouseMoveEvent(QMouseEvent *event){
     auto pos = this->pos() + event->pos();
     move(pos);
+    parentWidget()->repaint();
+}
+
+void Node::mousePressEvent(QMouseEvent *event){
+    m_isSelected = true;
+    emit nodeSelected(this);
+}
+
+void Node::mouseReleaseEvent(QMouseEvent *event){
+    m_isSelected = false;
 }

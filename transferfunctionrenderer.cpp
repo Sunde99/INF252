@@ -13,25 +13,34 @@ TransferFunctionRenderer::TransferFunctionRenderer(Environment *env, QWidget *pa
     : QWidget{parent},
       m_environment(env)
 {
-    Node *node1 = new Node(this);
-    node1->setColor(QColor(255,0,0));
-    node1->setPos(QVector2D(.2,0));
+    Node *node1 = new Node(
+        this,
+        QVector2D(.2,0),
+        QColor(255,0,0)
+    );
 
-    Node *node2 = new Node(this);
-    node2->setColor(QColor(255,255,0));
-    node2->setPos(QVector2D(.4,.4));
+    Node *node2 = new Node(
+        this,
+        QVector2D(.4,.4),
+        QColor(255,255,0)
+    );
+    Node *node3 = new Node(
+        this,
+        QVector2D(.6,.6),
+        QColor(0,255,0)
+    );
 
-    Node *node3 = new Node(this);
-    node3->setColor(QColor(0,255,0));
-    node3->setPos(QVector2D(.6,0.6));
+    Node *node4 = new Node(
+        this,
+        QVector2D(.8,.8),
+        QColor(0,255,255)
+    );
 
-    Node *node4 = new Node(this);
-    node4->setColor(QColor(0,255,255));
-    node4->setPos(QVector2D(.8,.8));
-
-    Node *node5 = new Node(this);
-    node5->setColor(QColor(0,0,255));
-    node5->setPos(QVector2D(1,1));
+    Node *node5 = new Node(
+        this,
+        QVector2D(1,1),
+        QColor(0,0,255)
+    );
 
     QVector<Node*> nodes;
     nodes.emplaceBack(node1);
@@ -45,7 +54,30 @@ TransferFunctionRenderer::TransferFunctionRenderer(Environment *env, QWidget *pa
         parent, SIGNAL(updateNodeValues()),
         this, SLOT(slotUpdateNodeValues())
     );
-    //think about how to add remove nodes (a +/- button at first?)
+    connect(
+        parent, SIGNAL(signalCreateNewNode()),
+        this, SLOT(createNewNode())
+    );
+    connect(
+        this, SIGNAL(signalNodeSelected(Node*)),
+        parent, SLOT(nodeSelected(Node*))
+    );
+}
+
+void TransferFunctionRenderer::slotNodeSelected(Node *node){
+    emit signalNodeSelected(node);
+}
+
+//SLOT
+void TransferFunctionRenderer::createNewNode(){
+    Node *newNode = new Node(this);
+    newNode->setColor(QColor(255,0,255));
+    newNode->setPos(QVector2D(0,0));
+    QVector<Node*> oldNodes = m_environment->getNodes();
+    oldNodes.append(newNode);
+    m_environment->setNodes(oldNodes);
+    newNode->show();
+    qDebug() << "new Node" << newNode->pos();
 }
 
 /**
@@ -55,7 +87,6 @@ TransferFunctionRenderer::TransferFunctionRenderer(Environment *env, QWidget *pa
  * Signals nodes to update their values
  */
 void TransferFunctionRenderer::slotUpdateNodeValues(){
-    qDebug() << "renderer got pinged!";
     emit signalUpdateNodeValues();
 }
 /**
@@ -65,9 +96,29 @@ void TransferFunctionRenderer::slotUpdateNodeValues(){
  */
 void TransferFunctionRenderer::paintEvent(QPaintEvent * event){
     QRect fullWidgetRect = this->rect();
-    QRect paintRect = QRect(0,0,fullWidgetRect.width()-1,fullWidgetRect.height()-1);
+    QRect paintRect = QRect(1,1,fullWidgetRect.width()-2,fullWidgetRect.height()-2);
+    QPen gridPen = QPen(QColor::fromRgbF(.7,.7,.7));
+    QPen defaultPen = QPen(QColor::fromRgbF(0,0,0));
     QPainter p;
     p.begin(this);
-    p.drawRect(paintRect);
+    p.fillRect(fullWidgetRect,QColor::fromRgbF(1,1,1));
+    p.setPen(defaultPen);
+//    p.drawRect(paintRect);
+    const float horizontalSteps = fullWidgetRect.width()/10.f;
+    p.setPen(gridPen);
+    for (float x=.0; x<fullWidgetRect.width(); x+=horizontalSteps){
+        p.drawLine(QLine(x,0,x,fullWidgetRect.height()));
+    }
+    const float verticalSteps = fullWidgetRect.height()/10.f;
+    for (float y=.0; y<fullWidgetRect.height(); y+=verticalSteps){
+        p.drawLine(QLine(0,y,fullWidgetRect.width(),y));
+    }
+    QVector<Node*> nodes = m_environment->getNodes();
+    for (int i=1; i<nodes.size(); i++){
+        Node* node1 = nodes.at(i-1);
+        Node* node2 = nodes.at(i);
+        QLine lineBetweenNodes = QLine(node1->pos(),node2->pos());
+        p.drawLine(lineBetweenNodes);
+    }
     p.end();
 }

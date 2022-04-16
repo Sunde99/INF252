@@ -21,11 +21,14 @@ protected:
 signals:
     void updateNodeValues();
     void updateTransferFunctionTexture();
+    void signalCreateNewNode();
 
 public slots:
     void setColorName(QColor color);
     void setColorButtonColor(QColor color);
     void updateTransferFunction();
+    void createNewNode();
+    void nodeSelected(Node *node);
 private:
     Environment * m_environment;
     QBoxLayout *m_layout;
@@ -34,6 +37,8 @@ private:
     QPushButton *m_colorDialogButton;
     TransferFunctionRenderer *m_transferFunctionBox;
     QPushButton *m_submitTransferFunctionChangesButton;
+    QPushButton *m_addNodeButton;
+    Node *m_selectedNode;
 };
 
 #endif // TRANSFERFUNCTIONWIDGET_H

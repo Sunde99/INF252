@@ -19,6 +19,7 @@ SOURCES += \
     node.cpp \
     renderwidget.cpp \
     transferfunctionrenderer.cpp \
+    transferfunctiontexturegenerator.cpp \
     transferfunctionwidget.cpp \
     volume.cpp
 
@@ -30,6 +31,7 @@ HEADERS += \
     node.h \
     renderwidget.h \
     transferfunctionrenderer.h \
+    transferfunctiontexturegenerator.h \
     transferfunctionwidget.h \
     volume.h
 

@@ -11,14 +11,14 @@ TransferFunctionWidget::TransferFunctionWidget(Environment *env, QWidget *parent
     m_environment(env)
 {
     m_layout = new QBoxLayout(QBoxLayout::TopToBottom,this);
-    m_colorDialogButton = new QPushButton("Color",this);
-    m_colorDialog = new QColorDialog(this);
-    m_colorNameTextLabel = new QLabel(this);
-    m_transferFunctionBox = new TransferFunctionRenderer(m_environment,this);
-    m_submitTransferFunctionChangesButton = new QPushButton("Submit",this);
     setLayout(m_layout);
 
-    m_colorNameTextLabel->setText("None");
+    m_colorDialogButton = new QPushButton("Color",this);
+    m_colorDialog = new QColorDialog(this);
+    m_colorNameTextLabel = new QLabel("None",this);
+    m_transferFunctionBox = new TransferFunctionRenderer(m_environment,this);
+    m_submitTransferFunctionChangesButton = new QPushButton("Submit",this);
+    m_addNodeButton = new QPushButton("+",this);
 
     //Clicking the colog dialog button opens the color menu
     connect(
@@ -39,33 +39,50 @@ TransferFunctionWidget::TransferFunctionWidget(Environment *env, QWidget *parent
         m_submitTransferFunctionChangesButton, SIGNAL(clicked()),
         this, SLOT(updateTransferFunction())
     );
-
     //Trigger environment to make renderers update the tf texture
     connect(
         this, SIGNAL(updateTransferFunctionTexture()),
         m_environment,SLOT(slotTransferFunctionChanged())
     );
+    //Adds a new node when + button is clicked
+    connect(
+        m_addNodeButton, SIGNAL(clicked()),
+        this, SLOT(createNewNode())
+    );
 
     m_layout->addWidget(m_colorDialogButton);
     m_layout->addWidget(m_colorDialog);
     m_layout->addWidget(m_colorNameTextLabel);
+    m_layout->addWidget(m_addNodeButton);
     m_layout->addWidget(m_transferFunctionBox);
     m_layout->addWidget(m_submitTransferFunctionChangesButton);
-    m_transferFunctionBox->setPalette(QPalette(QColor::fromRgbF(1,0,1)));
-    m_transferFunctionBox->setAutoFillBackground(true);
+}
+
+//SLOT
+void TransferFunctionWidget::createNewNode(){
+    emit signalCreateNewNode();
+}
+
+//SLOT
+void TransferFunctionWidget::nodeSelected(Node *node){
+    m_selectedNode = node;
+    setColorName(m_selectedNode->getColor());
+    setColorButtonColor(m_selectedNode->getColor());
 }
 
 //SLOT
 void TransferFunctionWidget::updateTransferFunction(){
-    qDebug() << "widget got pinged!";
     emit updateNodeValues();
     emit updateTransferFunctionTexture();
 }
 
+//SLOT
 void TransferFunctionWidget::setColorName(QColor color){
     m_colorNameTextLabel->setText(color.name());
+    m_selectedNode->setColor(color);
 }
 
+//SLOT
 void TransferFunctionWidget::setColorButtonColor(QColor color){
     m_colorDialogButton->setPalette(QPalette(color));
 }
