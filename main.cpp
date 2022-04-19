@@ -4,6 +4,7 @@
 #include <QSurfaceFormat>
 #include "volume.h"
 
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -20,6 +21,7 @@ int main(int argc, char *argv[])
     env->volume()->load("../hand/hand.dat");
     MainWindow w(env);
     w.resize(768,768);
+
     w.show();
 
     return a.exec();
