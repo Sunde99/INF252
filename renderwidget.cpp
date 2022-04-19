@@ -170,7 +170,7 @@ void RenderWidget::initializeGL()
 
     if (!m_blockProgram.link())
         qDebug() << "Could not link block shader program!";
-  
+
     //Histogram
     if (!m_histogramProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/histogram-vs.glsl"))
         qDebug() << "Could not load histogram vertex shader!";
@@ -306,7 +306,6 @@ void RenderWidget::paintGL()
 
     QVector4D newLightPos = QVector4D(m_lightCoords, 1.0) * modelViewProjectionMatrix;
     m_raymarchingProgram.setUniformValue("lightDir",newLightPos);
-//    m_raymarchingProgram.setUniformValue("lightDir", m_lightDir);
 
     glActiveTexture(GL_TEXTURE0 + 0);
     m_raymarchingProgram.setUniformValue("volumeTexture",0);
@@ -335,25 +334,8 @@ void RenderWidget::paintGL()
     //BRUH
 
     m_lightProgram.bind();
-//    QMatrix4x4 inverseModelViewProjectionMatrix = modelViewProjectionMatrix;
     m_lightProgram.setUniformValue("inverseModelViewMatrix",modelViewProjectionMatrix);
-//    qDebug() << m_lightCoords;
-//    vec4 newLightPos = vec4(lightPos, 1.0) * inverseModelViewMatrix;
-
-//    QMatrix4x4 moveLightToProperPosition = QMatrix4x4(0.18, 0, 0, 0, 0, 0.09, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-//    qDebug() << (newLightPos - QVector4D(5.5, 11, 0, 0)) * moveLightToProperPosition << " <---- NewLightPos";
-//    qDebug() << newLightPos;
-//    qDebug() << "LightPos: " << m_lightCoords;
-    // NOTE TO SELF
-    // LightPos e der du trykker
-    // newLightPos blir gjort i light-fs, kan senere sikkert flyttes ut
-    // Lyset e littegrann offset oppe til venstre, og mye offsett nede til høgre
-
-//    newLightPos = (newLightPos - QVector4D(5.5, 11, 0, 0)) * moveLightToProperPosition;
-//    qDebug() << "ACTUAL LOCATION --> " << newLightPos;
     m_lightProgram.setUniformValue("lightPos", m_lightCoords);
-//    Geometry::instance()->bindQuad();
-//    Geometry::instance()->drawQuad();
     drawSlice();
     m_lightProgram.release();
 

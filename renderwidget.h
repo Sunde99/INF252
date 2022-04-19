@@ -25,7 +25,6 @@ protected:
     virtual void resizeGL(int w, int h);
     virtual void drawSlice();
     virtual void paintGL();
-    virtual void createTransferFunction();
     virtual void wheelEvent(QWheelEvent *event);
     virtual void keyPressEvent(QKeyEvent *event);
     QVector3D arcballVector(qreal x, qreal y);
