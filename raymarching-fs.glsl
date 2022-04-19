@@ -77,11 +77,17 @@ void main(void)
             vec3 phong = max(dot(normal, -lightDir), 0.15) * color;
             fragColor.rgb += (1.0 - fragColor.a) * phong * density;
             fragColor.a += density;
-
+            if (abs(p.x) < 1 && abs(p.y) < 1 && abs(p.z) < 1){
+                fragColor = vec4(2);
+            }
             if (1.0 < fragColor.a) {
-                return;
+                break;
             }
             depth += stepSize;
         }
+        fragColor += vec4(1) * (1-fragColor.a);
+    } else{
+        gl_FragDepth = 1;
     }
+
 }

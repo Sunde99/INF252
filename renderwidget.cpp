@@ -13,7 +13,9 @@ RenderWidget::RenderWidget(Environment *env, QWidget *parent, Qt::WindowFlags f)
     m_transferFunctionTexture(QOpenGLTexture::Target1D)
 {
     m_modelViewMatrix.setToIdentity();
-    m_modelViewMatrix.translate(0.0, 1.0, -3.0*sqrt(3.0));
+    setFocus();
+//    m_modelViewMatrix.translate(0.0, 1.0, -3.0*sqrt(3.0));
+    m_modelViewMatrix.translate(0.0, 0, -5);
     m_showCompute = false;
     connect(m_environment,SIGNAL(signalTransferFunctionChanged()),this,SLOT(createTransferFunction()));
 }
@@ -54,11 +56,57 @@ void RenderWidget::createTransferFunction(){
 
 void RenderWidget::mousePressEvent(QMouseEvent *event)
 {
+    setFocus();
     m_currentX = qreal(event->x());
     m_currentY = qreal(event->y());
 
     m_previousX = m_currentX;
     m_previousY = m_currentY;
+}
+
+void RenderWidget::pan(QVector3D direction){
+    const float panSpeed = .1f;
+    qDebug() << "panning" << direction;
+    QVector3D dir = (m_modelViewMatrix.inverted() * QVector4D(direction*panSpeed,0)).toVector3D();
+    m_modelViewMatrix.translate(dir);
+}
+
+void RenderWidget::keyPressEvent(QKeyEvent *event){
+    if (event->key() == Qt::Key::Key_W){ //PAN UP
+        pan(QVector3D(0,-1,0));
+    }
+    else if (event->key() == Qt::Key::Key_A){ // PAN LEFT
+        pan(QVector3D(1,0,0));
+    }
+    else if (event->key() == Qt::Key::Key_S){ // PAN DOWN
+        pan(QVector3D(0,1,0));
+    }
+    else if (event->key() == Qt::Key::Key_D){ // PAN RIGHT
+        pan(QVector3D(-1,0,0));
+    }
+    else if (event->key() == Qt::Key::Key_Home){ // RESET CAMERA
+        m_modelViewMatrix.setToIdentity();
+        m_modelViewMatrix.translate(QVector3D(0,0,-5));
+    }
+    update();
+    QWidget::keyPressEvent(event);
+}
+
+void RenderWidget::wheelEvent(QWheelEvent *event){
+    if (event->angleDelta().y() != .0){
+        const float scrollSpeed = 10000.f;
+        const float scrollAmount = 1+event->angleDelta().y() / scrollSpeed;
+        m_modelViewMatrix.scale(scrollAmount);
+
+        update();
+    }
+    if (event->angleDelta().x() != .0){
+        const float scrollSpeed = 10000.f;
+        const float scrollAmount = event->angleDelta().x() / scrollSpeed;
+        m_modelViewMatrix.translate(QVector3D(scrollAmount,0,0));
+
+        update();
+    }
 }
 
 void RenderWidget::mouseMoveEvent(QMouseEvent *event)
