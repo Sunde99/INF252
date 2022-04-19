@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include "crosssectionrenderer.h"
+#include "transferfunctionwidget.h"
 
 MainWindow::MainWindow(Environment *env, QWidget *parent)
     : QMainWindow(parent), m_environment(env)
@@ -44,6 +45,11 @@ MainWindow::MainWindow(Environment *env, QWidget *parent)
     CrossSectionRenderer *widget = new CrossSectionRenderer(m_environment, m_mainWidget);
     m_layout->addWidget(widget);
     widget->show();
+
+    // TransferFunction
+    TransferFunctionWidget *tfWidget = new TransferFunctionWidget(m_environment, m_mainWidget);
+    m_layout->addWidget(tfWidget);
+    tfWidget->show();
 }
 
 MainWindow::~MainWindow()

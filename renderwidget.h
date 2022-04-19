@@ -16,6 +16,7 @@ public:
 
 public slots:
     virtual void doCompute();
+    virtual void createTransferFunction();
 
 protected:
     virtual void mousePressEvent(QMouseEvent *event);
@@ -25,10 +26,13 @@ protected:
     virtual void drawSlice();
     virtual void paintGL();
     virtual void createTransferFunction();
-//    virtual void pointLight();
+    virtual void wheelEvent(QWheelEvent *event);
+    virtual void keyPressEvent(QKeyEvent *event);
     QVector3D arcballVector(qreal x, qreal y);
 
 private:
+    void pan(QVector3D direction);
+
     Environment * m_environment;
     QOpenGLShaderProgram m_cubeProgram;
     QOpenGLShaderProgram m_blockProgram;
