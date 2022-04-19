@@ -1,10 +1,9 @@
 #include "renderwidget.h"
-#include "geometry.h"
 #include <QMouseEvent>
 #include <QtMath>
-
-
-
+#include <QVector>
+#include "geometry.h"
+#include "transferfunctiontexturegenerator.h"
 
 RenderWidget::RenderWidget(Environment *env, QWidget *parent, Qt::WindowFlags f) :
     QOpenGLWidget(parent,f),
@@ -14,24 +13,32 @@ RenderWidget::RenderWidget(Environment *env, QWidget *parent, Qt::WindowFlags f)
     m_transferFunctionTexture(QOpenGLTexture::Target1D)
 {
     m_modelViewMatrix.setToIdentity();
-    m_modelViewMatrix.translate(0.0, 1.0, -3.0*sqrt(3.0));
+    setFocus();
+//    m_modelViewMatrix.translate(0.0, 1.0, -3.0*sqrt(3.0));
+    m_modelViewMatrix.translate(0.0, 0, -5);
     m_showCompute = false;
+    connect(m_environment,SIGNAL(signalTransferFunctionChanged()),this,SLOT(createTransferFunction()));
 }
 
+
+/**
+ * @brief RenderWidget::createTransferFunction
+ * SLOT
+ * Generates transfer function texture to be used in shader
+ */
 void RenderWidget::createTransferFunction(){
     if (m_transferFunctionTexture.isCreated())
         m_transferFunctionTexture.destroy();
-    const int width = 5;
+
+    const QVector<Node*> nodes = m_environment->getNodes();
+    const int middleNodes = 100;
+    const int width = nodes.size() + middleNodes;
     const int height = 1;
     const int depth = 4;
 
-    float vecData[width*height*depth] = {
-        10.f, 0.f, 0.f, .0,
-        10.f, 10.f, 0.f, .4,
-        0.f, 10.f, 0.f, .6,
-        0.f, 10.f, 10.f, .8,
-        0.f, 0.f, 10.f, 1.
-    };
+    TransferFunctionTextureGenerator generator = TransferFunctionTextureGenerator(nodes,middleNodes);
+    QVector<float> textureData = generator.generateTextureData();
+
     m_transferFunctionTexture.setBorderColor(0,0,0,0);
     m_transferFunctionTexture.setWrapMode(QOpenGLTexture::ClampToEdge);
     m_transferFunctionTexture.setFormat(QOpenGLTexture::RGBA16F);
@@ -41,17 +48,65 @@ void RenderWidget::createTransferFunction(){
     m_transferFunctionTexture.setSize(width,height,depth);
     m_transferFunctionTexture.allocateStorage();
 
-    const auto data = reinterpret_cast<void*>(vecData);
+    void *data = textureData.data();
     m_transferFunctionTexture.setData(0,0,0,width,height,depth,QOpenGLTexture::RGBA,QOpenGLTexture::Float32,data);
+
+    update();
 }
 
 void RenderWidget::mousePressEvent(QMouseEvent *event)
 {
+    setFocus();
     m_currentX = qreal(event->x());
     m_currentY = qreal(event->y());
 
     m_previousX = m_currentX;
     m_previousY = m_currentY;
+}
+
+void RenderWidget::pan(QVector3D direction){
+    const float panSpeed = .1f;
+    qDebug() << "panning" << direction;
+    QVector3D dir = (m_modelViewMatrix.inverted() * QVector4D(direction*panSpeed,0)).toVector3D();
+    m_modelViewMatrix.translate(dir);
+}
+
+void RenderWidget::keyPressEvent(QKeyEvent *event){
+    if (event->key() == Qt::Key::Key_W){ //PAN UP
+        pan(QVector3D(0,-1,0));
+    }
+    else if (event->key() == Qt::Key::Key_A){ // PAN LEFT
+        pan(QVector3D(1,0,0));
+    }
+    else if (event->key() == Qt::Key::Key_S){ // PAN DOWN
+        pan(QVector3D(0,1,0));
+    }
+    else if (event->key() == Qt::Key::Key_D){ // PAN RIGHT
+        pan(QVector3D(-1,0,0));
+    }
+    else if (event->key() == Qt::Key::Key_Home){ // RESET CAMERA
+        m_modelViewMatrix.setToIdentity();
+        m_modelViewMatrix.translate(QVector3D(0,0,-5));
+    }
+    update();
+    QWidget::keyPressEvent(event);
+}
+
+void RenderWidget::wheelEvent(QWheelEvent *event){
+    if (event->angleDelta().y() != .0){
+        const float scrollSpeed = 10000.f;
+        const float scrollAmount = 1+event->angleDelta().y() / scrollSpeed;
+        m_modelViewMatrix.scale(scrollAmount);
+
+        update();
+    }
+    if (event->angleDelta().x() != .0){
+        const float scrollSpeed = 10000.f;
+        const float scrollAmount = event->angleDelta().x() / scrollSpeed;
+        m_modelViewMatrix.translate(QVector3D(scrollAmount,0,0));
+
+        update();
+    }
 }
 
 void RenderWidget::mouseMoveEvent(QMouseEvent *event)
@@ -91,26 +146,6 @@ void RenderWidget::initializeGL()
 
     // initialize geometry
     Geometry::instance();
-
-    //Cube
-    if (!m_cubeProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/cube-vs.glsl"))
-        qDebug() << "Could not load vertex shader!";
-
-    if (!m_cubeProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/cube-fs.glsl"))
-        qDebug() << "Could not load fragment shader!";
-
-    if (!m_cubeProgram.link())
-        qDebug() << "Could not link shader program!";
-
-    //Block
-    if (!m_blockProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/block-vs.glsl"))
-        qDebug() << "Could not load vertex shader!";
-
-    if (!m_blockProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/block-fs.glsl"))
-        qDebug() << "Could not load fragment shader!";
-
-    if (!m_blockProgram.link())
-        qDebug() << "Could not link shader program!";
 
     //Histogram
     if (!m_histogramProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/histogram-vs.glsl"))
@@ -196,7 +231,6 @@ void RenderWidget::resizeGL(int w, int h)
 
     m_projectionMatrix.setToIdentity();
     m_projectionMatrix.perspective(fov,aspectRatio,nearPlane,farPlane);
-
 }
 
 void RenderWidget::paintGL()
@@ -266,8 +300,6 @@ void RenderWidget::paintGL()
     m_histogramTexture.release();
 
 }
-
-
 
 QVector3D RenderWidget::arcballVector(qreal x, qreal y)
 {

@@ -1,7 +1,7 @@
 #version 430
 
-uniform int RAYMARCH_STEPS = 1000;
-uniform float EPSILON = 0.001;
+uniform int RAYMARCH_STEPS = 500;
+uniform float EPSILON = 0.1;
 
 in vec2 fragCoord;
 
@@ -77,11 +77,17 @@ void main(void)
             vec3 phong = max(dot(normal, -lightDir), 0.15) * color;
             fragColor.rgb += (1.0 - fragColor.a) * phong * density;
             fragColor.a += density;
-
+            if (abs(p.x) < 1 && abs(p.y) < 1 && abs(p.z) < 1){
+                fragColor = vec4(2);
+            }
             if (1.0 < fragColor.a) {
-                return;
+                break;
             }
             depth += stepSize;
         }
+        fragColor += vec4(1) * (1-fragColor.a);
+    } else{
+        gl_FragDepth = 1;
     }
+
 }
