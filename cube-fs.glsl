@@ -11,5 +11,6 @@ void main(void)
 //    if (volumeValue<=0.1f){
 //        gl_FragDepth = 1.0f;
 //    }
+//    vec3 light = lightDir;
     fragmentColor = vec4(volumeValue,volumeValue,volumeValue,1.0);
 }
