@@ -10,7 +10,7 @@ uniform sampler1D transferFunction;
 uniform sampler3D volumeTexture;
 uniform vec3 volumeScale;
 uniform vec3 volumeSpacing;
-uniform vec4 lightDir = vec4(1.0, 0.0, 0.0, 1.0);
+uniform vec3 lightDir = vec3(1.0, 0.0, 0.0);
 
 out vec4 fragColor;
 
@@ -50,7 +50,6 @@ void main(void)
 {
     // Low but non-zero fragDepth to avoid overshadowing the light icon
     gl_FragDepth = 0.001;
-    vec3 lightDir = lightDir.xyz;
 
     vec4 near = MVP * vec4(fragCoord, -1., 1.);
     near /= near.w;
