@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include "crosssectionrenderer.h"
 #include "transferfunctionwidget.h"
+#include "histogramwidget.h"
 
 MainWindow::MainWindow(Environment *env, QWidget *parent)
     : QMainWindow(parent), m_environment(env)
@@ -36,7 +37,7 @@ MainWindow::MainWindow(Environment *env, QWidget *parent)
     fileMenu->addAction(fileRemoveWidgetAction);
 
     QAction *fileComputeAction = new QAction("Compute",this);
-    connect(fileComputeAction,SIGNAL(triggered()),m_renderWidgets.first(),SLOT(doCompute()));
+//    connect(fileComputeAction,SIGNAL(triggered()),m_renderWidgets.first(),SLOT(doCompute()));
     fileMenu->addAction(fileComputeAction);
 
     menuBar()->addMenu(fileMenu);
@@ -50,6 +51,9 @@ MainWindow::MainWindow(Environment *env, QWidget *parent)
     TransferFunctionWidget *tfWidget = new TransferFunctionWidget(m_environment, m_mainWidget);
     m_layout->addWidget(tfWidget);
     tfWidget->show();
+
+    connect(fileComputeAction,SIGNAL(triggered()),this,SLOT(computeActionTriggered()));
+    fileMenu->addAction(fileComputeAction);
 }
 
 MainWindow::~MainWindow()
@@ -65,6 +69,10 @@ void MainWindow::fileOpen()
         m_environment->volume()->load(fileName);
     }
 
+}
+
+void MainWindow::computeActionTriggered(){
+    emit doCompute();
 }
 
 // WORKAROUND

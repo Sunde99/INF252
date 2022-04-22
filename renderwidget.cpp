@@ -57,8 +57,8 @@ void RenderWidget::createTransferFunction(){
 void RenderWidget::mousePressEvent(QMouseEvent *event)
 {
     setFocus();
-    m_currentX = qreal(event->x());
-    m_currentY = qreal(event->y());
+    m_currentX = qreal(event->pos().x());
+    m_currentY = qreal(event->pos().y());
 
     m_previousX = m_currentX;
     m_previousY = m_currentY;
@@ -111,8 +111,8 @@ void RenderWidget::wheelEvent(QWheelEvent *event){
 
 void RenderWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    m_currentX = qreal(event->x());
-    m_currentY = qreal(event->y());
+    m_currentX = qreal(event->pos().x());
+    m_currentY = qreal(event->pos().y());
 
     if (event->buttons() & Qt::LeftButton)
     {
@@ -186,6 +186,7 @@ void RenderWidget::initializeGL()
 
 void RenderWidget::doCompute()
 {
+    qDebug() << "DO COMPUTE IS CALLED";
     if (m_volumeTexture.width() != m_environment->volume()->width() || m_volumeTexture.height() != m_environment->volume()->height() || m_volumeTexture.depth() != m_environment->volume()->depth())
     {
         if (m_volumeTexture.isCreated())
@@ -249,7 +250,7 @@ void RenderWidget::paintGL()
     volumeToUnitCoordinates.scale(1.0f/float(m_environment->volume()->width()),1.0f/float(m_environment->volume()->height()),1.0f/float(m_environment->volume()->depth()));
 
     QMatrix4x4 modelViewProjectionMatrix = m_projectionMatrix*m_modelViewMatrix*volumeToUnitCoordinates;
-    QVector3D blockSize = QVector3D(float(BLOCKDIMENSION),float(BLOCKDIMENSION),float(BLOCKDIMENSION));
+//    QVector3D blockSize = QVector3D(float(BLOCKDIMENSION),float(BLOCKDIMENSION),float(BLOCKDIMENSION));
     QVector3D volumeSize = QVector3D(float(m_environment->volume()->width()),float(m_environment->volume()->height()),float(m_environment->volume()->depth()));
 
     m_raymarchingProgram.bind();
@@ -257,17 +258,23 @@ void RenderWidget::paintGL()
     m_raymarchingProgram.setUniformValue("volumeSpacing",QVector3D(1,1,1));
     m_raymarchingProgram.setUniformValue("volumeScale",volumeSize);
 
+//    glActiveTexture(GL_TEXTURE0 + 0);
+//    m_raymarchingProgram.setUniformValue("volumeTexture",0);
+    GLuint samplerLocation1 = m_raymarchingProgram.uniformLocation("volumeTexture");
+    glUniform1i(samplerLocation1, 0);
     glActiveTexture(GL_TEXTURE0 + 0);
-    m_raymarchingProgram.setUniformValue("volumeTexture",0);
+    glBindTexture(GL_TEXTURE_3D, m_volumeTexture.textureId());
 
+    glEnable(GL_TEXTURE_3D);
     m_environment->volume()->bind();
 
     Geometry::instance()->bindQuad();
 
-    int location = m_raymarchingProgram.attributeLocation("vertexPosition");
-    m_raymarchingProgram.enableAttributeArray(location);
+//    int location = m_raymarchingProgram.attributeLocation("vertexPosition");
+//    m_raymarchingProgram.enableAttributeArray(location);
 
-    m_raymarchingProgram.setAttributeBuffer(location,GL_FLOAT,0,3,sizeof(QVector3D));
+//    m_raymarchingProgram.setAttributeBuffer(location,GL_FLOAT,0,3,sizeof(QVector3D));
+
 
     GLuint samplerLocation = m_raymarchingProgram.uniformLocation("transferFunction");
     glUniform1i(samplerLocation, 1);
@@ -276,29 +283,32 @@ void RenderWidget::paintGL()
 
     Geometry::instance()->drawQuad();
 
-    glActiveTexture(GL_TEXTURE0);
+//    glActiveTexture(GL_TEXTURE0);
 
     m_environment->volume()->release();
 
     m_raymarchingProgram.release();
     //BRUH
 
-    glViewport(0,0,m_histogramTexture.width(),m_histogramTexture.height());
+//    glViewport(0,0,m_histogramTexture.width(),m_histogramTexture.height());
 
-    m_histogramProgram.bind();
-    Geometry::instance()->bindQuad();
+//    m_histogramProgram.bind();
+//    Geometry::instance()->bindQuad();
 
-    glBindImageTexture(0,m_histogramTexture.textureId(),0,GL_FALSE,0,GL_READ_ONLY,GL_R32UI);
+//    glBindImageTexture(0,m_histogramTexture.textureId(),0,GL_FALSE,0,GL_READ_ONLY,GL_R32UI);
 
-    location = m_histogramProgram.attributeLocation("vertexPosition");
+    int location = m_histogramProgram.attributeLocation("vertexPosition");
     m_histogramProgram.enableAttributeArray(location);
     m_histogramProgram.setAttributeBuffer(location,GL_FLOAT,0,3,sizeof(QVector3D));
 
-    Geometry::instance()->drawQuad();
-    m_histogramProgram.release();
+    //    m_histogramProgram.disableAttributeArray(location);
 
-    m_histogramTexture.release();
+//    Geometry::instance()->drawQuad();
+//    m_histogramProgram.release();
 
+//    m_histogramTexture.release();
+
+    glUseProgram(0);
 }
 
 QVector3D RenderWidget::arcballVector(qreal x, qreal y)

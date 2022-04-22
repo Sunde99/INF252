@@ -14,6 +14,7 @@ SOURCES += \
     crosssectionrenderer.cpp \
     environment.cpp \
     geometry.cpp \
+    histogramwidget.cpp \
     main.cpp \
     mainwindow.cpp \
     node.cpp \
@@ -27,6 +28,7 @@ HEADERS += \
     crosssectionrenderer.h \
     environment.h \
     geometry.h \
+    histogramwidget.h \
     mainwindow.h \
     node.h \
     renderwidget.h \

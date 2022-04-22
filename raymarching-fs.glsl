@@ -48,6 +48,8 @@ vec3 gradient(vec3 p) {
 
 void main(void)
 {
+    gl_FragDepth = 0;
+
     vec4 near = MVP * vec4(fragCoord, -1., 1.);
     near /= near.w;
 
@@ -89,5 +91,4 @@ void main(void)
     } else{
         gl_FragDepth = 1;
     }
-
 }

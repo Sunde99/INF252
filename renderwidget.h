@@ -33,8 +33,6 @@ private:
     void pan(QVector3D direction);
 
     Environment * m_environment;
-    QOpenGLShaderProgram m_cubeProgram;
-    QOpenGLShaderProgram m_blockProgram;
     QOpenGLShaderProgram m_histogramProgram;
     QOpenGLShaderProgram m_computeProgram;
     QOpenGLShaderProgram m_raymarchingProgram;

@@ -4,10 +4,11 @@
 #include <QVector>
 #include <QColor>
 #include <QVector2D>
+#include <QVBoxLayout>
 #include "transferfunctionrenderer.h"
 #include "node.h"
 #include "environment.h"
-#include "node.h"
+#include "histogramwidget.h"
 
 TransferFunctionRenderer::TransferFunctionRenderer(Environment *env, QWidget *parent)
     : QWidget{parent},
@@ -62,6 +63,11 @@ TransferFunctionRenderer::TransferFunctionRenderer(Environment *env, QWidget *pa
         this, SIGNAL(signalNodeSelected(Node*)),
         parent, SLOT(nodeSelected(Node*))
     );
+
+    //HISTOGRAM
+    HistogramWidget *hgWidget = new HistogramWidget(m_environment, this);
+    hgWidget->setFixedSize(this->size());
+    connect(this->parentWidget()->parentWidget()->parentWidget(),SIGNAL(doCompute()),hgWidget,SLOT(doCompute()));
 }
 
 void TransferFunctionRenderer::slotNodeSelected(Node *node){
