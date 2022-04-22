@@ -60,8 +60,12 @@ void RenderWidget::mousePressEvent(QMouseEvent *event)
     m_currentX = qreal(event->pos().x());
     m_currentY = qreal(event->pos().y());
 
+    m_lightCoords = QVector3D(m_currentX, m_currentY, 0.0f);
+
     m_previousX = m_currentX;
     m_previousY = m_currentY;
+
+    update();
 }
 
 void RenderWidget::pan(QVector3D direction){
@@ -147,30 +151,60 @@ void RenderWidget::initializeGL()
     // initialize geometry
     Geometry::instance();
 
+    //Cube
+    if (!m_cubeProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/cube-vs.glsl"))
+        qDebug() << "Could not load cube vertex shader!";
+
+    if (!m_cubeProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/cube-fs.glsl"))
+        qDebug() << "Could not load cube fragment shader!";
+
+    if (!m_cubeProgram.link())
+        qDebug() << "Could not link cube shader program!";
+
+    //Block
+    if (!m_blockProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/block-vs.glsl"))
+        qDebug() << "Could not load block vertex shader!";
+
+    if (!m_blockProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/block-fs.glsl"))
+        qDebug() << "Could not load block fragment shader!";
+
+    if (!m_blockProgram.link())
+        qDebug() << "Could not link block shader program!";
+
     //Histogram
     if (!m_histogramProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/histogram-vs.glsl"))
-        qDebug() << "Could not load vertex shader!";
+        qDebug() << "Could not load histogram vertex shader!";
 
     if (!m_histogramProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/histogram-fs.glsl"))
-        qDebug() << "Could not load fragment shader!";
+        qDebug() << "Could not load histogram fragment shader!";
 
     if (!m_histogramProgram.link())
-        qDebug() << "Could not link shader program!";
+        qDebug() << "Could not link histogram shader program!";
     //Compute
     if (!m_computeProgram.addShaderFromSourceFile(QOpenGLShader::Compute,":/shaders/volume-cs.glsl"))
         qDebug() << "Could not load compute shader!";
 
     if (!m_computeProgram.link())
-        qDebug() << "Could not link shader program!";
+        qDebug() << "Could not link compute shader program!";
     //Raymarching
     if (!m_raymarchingProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/screen-vs.glsl"))
-        qDebug() << "Could not load vertex shader!";
+        qDebug() << "Could not load raymarch  vertex shader!";
 
     if (!m_raymarchingProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/raymarching-fs.glsl"))
-        qDebug() << "Could not load fragment shader!";
+        qDebug() << "Could not load raymarch fragment shader!";
 
     if (!m_raymarchingProgram.link())
-        qDebug() << "Could not link shader program!";
+        qDebug() << "Could not link raymarch shader program!";
+
+    //Lightballthingy
+    if (!m_lightProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/light-vs.glsl"))
+        qDebug() << "Could not load light vertex shader!";
+
+    if (!m_lightProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/light-fs.glsl"))
+        qDebug() << "Could not load light fragment shader!";
+
+    if (!m_lightProgram.link())
+        qDebug() << "Could not link light shader program!";
 
     m_histogramTexture.setBorderColor(0,0,0,0);
     m_histogramTexture.setWrapMode(QOpenGLTexture::ClampToEdge);
@@ -234,8 +268,21 @@ void RenderWidget::resizeGL(int w, int h)
     m_projectionMatrix.perspective(fov,aspectRatio,nearPlane,farPlane);
 }
 
+void RenderWidget::drawSlice(){
+
+    glBegin(GL_QUADS);
+
+    glVertex2f(-1.f,-1.f);
+    glVertex2f(1.f,-1.f);
+
+    glVertex2f(1.f,1.f);
+    glVertex2f(-1.f,1.f);
+    glEnd();
+}
+
 void RenderWidget::paintGL()
 {
+
     glClearColor(1.0f,1.0f,1.0f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -258,10 +305,11 @@ void RenderWidget::paintGL()
     m_raymarchingProgram.setUniformValue("volumeSpacing",QVector3D(1,1,1));
     m_raymarchingProgram.setUniformValue("volumeScale",volumeSize);
 
-//    glActiveTexture(GL_TEXTURE0 + 0);
-//    m_raymarchingProgram.setUniformValue("volumeTexture",0);
     GLuint samplerLocation1 = m_raymarchingProgram.uniformLocation("volumeTexture");
     glUniform1i(samplerLocation1, 0);
+    QVector4D newLightPos = QVector4D(m_lightCoords, 1.0) * modelViewProjectionMatrix;
+    m_raymarchingProgram.setUniformValue("lightDir",newLightPos);
+
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_3D, m_volumeTexture.textureId());
 
@@ -290,23 +338,15 @@ void RenderWidget::paintGL()
     m_raymarchingProgram.release();
     //BRUH
 
-//    glViewport(0,0,m_histogramTexture.width(),m_histogramTexture.height());
-
-//    m_histogramProgram.bind();
-//    Geometry::instance()->bindQuad();
-
-//    glBindImageTexture(0,m_histogramTexture.textureId(),0,GL_FALSE,0,GL_READ_ONLY,GL_R32UI);
+    m_lightProgram.bind();
+    m_lightProgram.setUniformValue("inverseModelViewMatrix",modelViewProjectionMatrix);
+    m_lightProgram.setUniformValue("lightPos", m_lightCoords);
+    drawSlice();
+    m_lightProgram.release();
 
     int location = m_histogramProgram.attributeLocation("vertexPosition");
     m_histogramProgram.enableAttributeArray(location);
     m_histogramProgram.setAttributeBuffer(location,GL_FLOAT,0,3,sizeof(QVector3D));
-
-    //    m_histogramProgram.disableAttributeArray(location);
-
-//    Geometry::instance()->drawQuad();
-//    m_histogramProgram.release();
-
-//    m_histogramTexture.release();
 
     glUseProgram(0);
 }

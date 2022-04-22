@@ -23,10 +23,10 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent *event);
     virtual void initializeGL();
     virtual void resizeGL(int w, int h);
+    virtual void drawSlice();
     virtual void paintGL();
     virtual void wheelEvent(QWheelEvent *event);
     virtual void keyPressEvent(QKeyEvent *event);
-
     QVector3D arcballVector(qreal x, qreal y);
 
 private:
@@ -36,8 +36,10 @@ private:
     QOpenGLShaderProgram m_histogramProgram;
     QOpenGLShaderProgram m_computeProgram;
     QOpenGLShaderProgram m_raymarchingProgram;
+    QOpenGLShaderProgram m_lightProgram;
     QMatrix4x4 m_projectionMatrix;
     QMatrix4x4 m_modelViewMatrix;
+    QVector3D m_lightCoords;
     qreal m_currentX,m_currentY;
     qreal m_previousX,m_previousY;
     QOpenGLTexture m_volumeTexture;

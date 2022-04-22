@@ -10,5 +10,7 @@
         <file>screen-vs.glsl</file>
         <file>image-slice-fs.glsl</file>
         <file>raymarching-fs.glsl</file>
+        <file>light-fs.glsl</file>
+        <file>light-vs.glsl</file>
     </qresource>
 </RCC>

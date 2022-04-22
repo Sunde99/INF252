@@ -10,7 +10,7 @@ uniform sampler1D transferFunction;
 uniform sampler3D volumeTexture;
 uniform vec3 volumeScale;
 uniform vec3 volumeSpacing;
-uniform vec3 lightDir = vec3(1.0, 0.0, 0.0);
+uniform vec4 lightDir = vec4(1.0, 0.0, 0.0, 1.0);
 
 out vec4 fragColor;
 
@@ -48,7 +48,9 @@ vec3 gradient(vec3 p) {
 
 void main(void)
 {
-    gl_FragDepth = 0;
+    // Low but non-zero fragDepth to avoid overshadowing the light icon
+    gl_FragDepth = 0.001;
+    vec3 lightDir = lightDir.xyz;
 
     vec4 near = MVP * vec4(fragCoord, -1., 1.);
     near /= near.w;
@@ -76,7 +78,7 @@ void main(void)
             density = mix(density, density * length(g), 0.5);
             vec3 normal = normalize(g);
             vec3 color = tex.rgb;
-            vec3 phong = max(dot(normal, -lightDir), 0.15) * color;
+            vec3 phong = max(dot(normal, -normalize(lightDir)), 0.15) * color;
             fragColor.rgb += (1.0 - fragColor.a) * phong * density;
             fragColor.a += density;
             if (abs(p.x) < 1 && abs(p.y) < 1 && abs(p.z) < 1){
