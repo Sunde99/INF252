@@ -15,11 +15,14 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(Environment *env, QWidget *parent = nullptr);
     ~MainWindow();
+signals:
+    void doCompute();
 
 public slots:
     void fileOpen();
     void addWidget();
     void removeWidget();
+    void computeActionTriggered();
 
 private:
     Environment *m_environment;

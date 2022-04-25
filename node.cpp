@@ -3,6 +3,7 @@
 #include <QRect>
 #include <QPoint>
 #include <QBrush>
+#include <QSizePolicy>
 #include "transferfunctionrenderer.h"
 
 Node::Node(QWidget *parent, QVector2D pos, QColor color)
@@ -10,21 +11,25 @@ Node::Node(QWidget *parent, QVector2D pos, QColor color)
       m_pos(pos),
       m_color(color)
 {
-    move(m_pos.toPoint());
+    QSizePolicy sizePolicy = QSizePolicy();
+    sizePolicy.setHorizontalPolicy(QSizePolicy::Policy::Preferred);
+    sizePolicy.setVerticalPolicy(QSizePolicy::Policy::Preferred);
+    setSizePolicy(sizePolicy);
+    moveWithinBoundaries(m_pos);
 
     connect(
-        parent, SIGNAL(signalUpdateNodeValues()),
+        parent, SIGNAL(updateNodeValuesSignal()),
         this, SLOT(updateValues())
     );
 
     connect(
         this, SIGNAL(nodeSelected(Node*)),
-        parent, SLOT(slotNodeSelected(Node*))
+        parent, SLOT(nodeSelectedSlot(Node*))
     );
 }
 
 QSize Node::sizeHint() const{
-    return QSize(15,15);
+    return QSize(10,10);
 }
 
 /**
@@ -84,7 +89,7 @@ QVector4D Node::getInfo(){
  */
 void Node::mouseMoveEvent(QMouseEvent *event){
     auto pos = this->pos() + event->pos();
-    move(pos);
+    moveWithinBoundaries(pos.x(),pos.y());
     parentWidget()->repaint();
 }
 
@@ -95,4 +100,43 @@ void Node::mousePressEvent(QMouseEvent *event){
 
 void Node::mouseReleaseEvent(QMouseEvent *event){
     m_isSelected = false;
+}
+
+void Node::moveWithinBoundaries(QVector2D pos){
+    float maxWidth = parentWidget()->rect().width()-rect().width();
+    float maxHeight = parentWidget()->rect().height()-rect().height();
+    if (pos.x()<.0){
+        pos.setX(0);
+    }
+    if (pos.x()>maxWidth){
+        pos.setX(maxWidth);
+    }
+    if (pos.y()>maxHeight){
+        pos.setY(maxHeight);
+    }
+    if (pos.y()<.0){
+        pos.setY(0);
+    }
+    move(pos.toPoint());
+}
+
+void Node::rendererResized(QSize oldSize, QSize newSize){
+    setFixedSize(this->sizeHint());
+    float relativeWidthIncrease;
+    float relativeHeightIncrease;
+    float posX;
+    float posY;
+    if (oldSize.width() == -1){
+        relativeWidthIncrease = newSize.width();
+        relativeHeightIncrease = newSize.height();
+        posX = m_pos.x();
+        posY = m_pos.y();
+    }
+    else{
+        relativeWidthIncrease = float(newSize.width())/float(oldSize.width());
+        relativeHeightIncrease = float(newSize.height())/float(oldSize.height());
+        posX = pos().x();
+        posY = pos().y();
+    }
+    moveWithinBoundaries(posX*relativeWidthIncrease, posY*relativeHeightIncrease);
 }

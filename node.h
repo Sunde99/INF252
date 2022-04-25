@@ -14,6 +14,7 @@ public:
     void setPos(QVector2D newPos) {m_pos = newPos;};
     void setColor(QColor newColor) {m_color = newColor; repaint();};
     void moveNode(QVector2D moveVec){setPos(m_pos + moveVec);};
+    void rendererResized(QSize oldSize, QSize newSize);
     QColor getColor() {return m_color;};
 
     QVector4D getInfo();
@@ -24,12 +25,15 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent *event);
     virtual void mousePressEvent(QMouseEvent *event);
     virtual void mouseReleaseEvent(QMouseEvent *event);
+//    virtual void resizeEvent(QResizeEvent *event);
     virtual QSize sizeHint() const;
 signals:
     void nodeSelected(Node* = nullptr);
 public slots:
     void updateValues();
 private:
+    void moveWithinBoundaries(float x, float y) {moveWithinBoundaries(QVector2D(x,y));};
+    void moveWithinBoundaries(QVector2D pos);
     QVector2D m_pos;
     QColor m_color;
     bool m_isSelected = false;
