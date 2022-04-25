@@ -61,6 +61,8 @@ void RenderWidget::mousePressEvent(QMouseEvent *event)
     m_currentY = qreal(event->pos().y());
 
     m_lightCoords = QVector3D(m_currentX, m_currentY, 0.0f);
+    m_lightCoords[0] = (m_lightCoords[0]/width()) * 2 - 1;
+    m_lightCoords[1] = (m_lightCoords[1]/height()) * 2 - 1;
 
     m_previousX = m_currentX;
     m_previousY = m_currentY;
@@ -115,9 +117,9 @@ void RenderWidget::wheelEvent(QWheelEvent *event){
 
 void RenderWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    m_currentX = qreal(event->pos().x());
-    m_currentY = qreal(event->pos().y());
-
+    m_currentX = qreal(event->x());
+    m_currentY = qreal(event->y());
+    m_lightCoords = QVector3D(m_currentX, m_currentY, 0.0f);
     if (event->buttons() & Qt::LeftButton)
     {
         if (m_currentX != m_previousX || m_currentY != m_previousY)
@@ -288,7 +290,7 @@ void RenderWidget::paintGL()
     GLuint samplerLocation1 = m_raymarchingProgram.uniformLocation("volumeTexture");
     glUniform1i(samplerLocation1, 0);
     QVector4D newLightPos = QVector4D(m_lightCoords, 1.0) * modelViewProjectionMatrix;
-    m_raymarchingProgram.setUniformValue("lightDir",newLightPos);
+    m_raymarchingProgram.setUniformValue("lightDir",m_lightCoords);
 
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_3D, m_volumeTexture.textureId());
