@@ -14,9 +14,35 @@ TransferFunctionRenderer::TransferFunctionRenderer(Environment *env, QWidget *pa
     : QWidget{parent},
       m_environment(env)
 {
+    createDefaultNodes();
+
+    QSizePolicy sizePolicy = QSizePolicy();
+    sizePolicy.setHorizontalPolicy(QSizePolicy::Policy::Preferred);
+    sizePolicy.setVerticalPolicy(QSizePolicy::Policy::Preferred);
+    setSizePolicy(sizePolicy);
+
+    connect(
+        parent, SIGNAL(updateNodeValues()),
+        this, SLOT(updateNodeValuesSlot())
+    );
+    connect(
+        parent, SIGNAL(createNewNodeSignal()),
+        this, SLOT(createNewNode())
+    );
+    connect(
+        this, SIGNAL(nodeSelectedSignal(Node*)),
+        parent, SLOT(nodeSelectedSlot(Node*))
+    );
+}
+
+/**
+ * @brief TransferFunctionRenderer::createDefaultNodes
+ * Creates a set of 5 default nodes
+ */
+void TransferFunctionRenderer::createDefaultNodes(){
     Node *node1 = new Node(
         this,
-        QVector2D(.2,0),
+        QVector2D(.1,.1),
         QColor(255,0,0)
     );
 
@@ -50,28 +76,10 @@ TransferFunctionRenderer::TransferFunctionRenderer(Environment *env, QWidget *pa
     nodes.emplaceBack(node4);
     nodes.emplaceBack(node5);
     m_environment->setNodes(nodes);
-
-    connect(
-        parent, SIGNAL(updateNodeValues()),
-        this, SLOT(slotUpdateNodeValues())
-    );
-    connect(
-        parent, SIGNAL(signalCreateNewNode()),
-        this, SLOT(createNewNode())
-    );
-    connect(
-        this, SIGNAL(signalNodeSelected(Node*)),
-        parent, SLOT(nodeSelected(Node*))
-    );
-
-    //HISTOGRAM
-    HistogramWidget *hgWidget = new HistogramWidget(m_environment, this);
-    hgWidget->setFixedSize(this->size());
-    connect(this->parentWidget()->parentWidget()->parentWidget(),SIGNAL(doCompute()),hgWidget,SLOT(doCompute()));
 }
 
-void TransferFunctionRenderer::slotNodeSelected(Node *node){
-    emit signalNodeSelected(node);
+void TransferFunctionRenderer::nodeSelectedSlot(Node *node){
+    emit nodeSelectedSignal(node);
 }
 
 //SLOT
@@ -92,8 +100,8 @@ void TransferFunctionRenderer::createNewNode(){
  * Trigggered when submit button is clicked in the TransferFunctionWidget
  * Signals nodes to update their values
  */
-void TransferFunctionRenderer::slotUpdateNodeValues(){
-    emit signalUpdateNodeValues();
+void TransferFunctionRenderer::updateNodeValuesSlot(){
+    emit updateNodeValuesSignal();
 }
 /**
  * @brief TransferFunctionRenderer::paintEvent
@@ -127,4 +135,15 @@ void TransferFunctionRenderer::paintEvent(QPaintEvent * event){
         p.drawLine(lineBetweenNodes);
     }
     p.end();
+}
+
+void TransferFunctionRenderer::resizeEvent(QResizeEvent *event){
+    QVector<Node*> nodes = m_environment->getNodes();
+    if (event->size().width() != event->oldSize().width()){
+        for (int i=0; i<nodes.size(); i++){
+            Node* node = nodes.at(i);
+            node->rendererResized(event->oldSize(), event->size());
+        }
+    }
+    QWidget::resizeEvent(event);
 }

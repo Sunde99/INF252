@@ -151,26 +151,6 @@ void RenderWidget::initializeGL()
     // initialize geometry
     Geometry::instance();
 
-    //Cube
-    if (!m_cubeProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/cube-vs.glsl"))
-        qDebug() << "Could not load cube vertex shader!";
-
-    if (!m_cubeProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/cube-fs.glsl"))
-        qDebug() << "Could not load cube fragment shader!";
-
-    if (!m_cubeProgram.link())
-        qDebug() << "Could not link cube shader program!";
-
-    //Block
-    if (!m_blockProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/block-vs.glsl"))
-        qDebug() << "Could not load block vertex shader!";
-
-    if (!m_blockProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/block-fs.glsl"))
-        qDebug() << "Could not load block fragment shader!";
-
-    if (!m_blockProgram.link())
-        qDebug() << "Could not link block shader program!";
-
     //Histogram
     if (!m_histogramProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/histogram-vs.glsl"))
         qDebug() << "Could not load histogram vertex shader!";
