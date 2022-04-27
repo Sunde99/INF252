@@ -1,6 +1,6 @@
 #version 430
 
-uniform int RAYMARCH_STEPS = 500;
+uniform int RAYMARCH_STEPS = 250;
 uniform float EPSILON = 0.1;
 
 in vec2 fragCoord;
@@ -11,6 +11,7 @@ uniform sampler3D volumeTexture;
 uniform vec3 volumeScale;
 uniform vec3 volumeSpacing;
 uniform vec3 lightDir = vec3(1.0, 0.0, 0.0);
+uniform vec4 backgroundColor = vec4(1);
 
 out vec4 fragColor;
 
@@ -80,17 +81,14 @@ void main(void)
             vec3 phong = max(dot(normal, -normalize(lightDir)), 0.15) * color;
             fragColor.rgb += (1.0 - fragColor.a) * phong * density;
             fragColor.a += density;
-            if (abs(p.x) < 1 && abs(p.y) < 1 && abs(p.z) < 1){
-                fragColor = vec4(2);
-            }
             if (1.0 < fragColor.a) {
                 break;
             }
             depth += stepSize;
         }
-        fragColor += vec4(1) * (1-fragColor.a);
     } else{
-        gl_FragDepth = 1;
+//        gl_FragDepth = 1;
     }
+    fragColor += backgroundColor * (1-fragColor.a);
 
 }

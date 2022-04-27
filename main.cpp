@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(f);
 
     Environment *env = new Environment();
-    env->volume()->load("../hand/hand.dat");
+   env->volume()->load("../hand/hand.dat");
     MainWindow w(env);
     w.resize(768,768);
 
