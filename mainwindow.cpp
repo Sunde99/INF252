@@ -8,7 +8,12 @@
 #include <QSettings>
 #include "crosssectionrenderer.h"
 #include "transferfunctionwidget.h"
+<<<<<<< HEAD
 #include "renderwidget.h"
+=======
+#include "histogramwidget.h"
+#include "sidebar.h"
+>>>>>>> b4cd06f36b751f62466c1fdb37cbf8b7d45c1429
 
 MainWindow::MainWindow(Environment *env, QWidget *parent)
     : QMainWindow(parent), m_environment(env)
@@ -21,8 +26,9 @@ MainWindow::MainWindow(Environment *env, QWidget *parent)
     m_layout = new QHBoxLayout(m_mainWidget);
 
     setCentralWidget(m_mainWidget);
-    addWidget();
-
+//    addWidget();
+    RenderWidget *widget = new RenderWidget(m_environment,m_mainWidget);
+    m_layout->addWidget(widget,2);
 
     QMenu *fileMenu = new QMenu("File");
 
@@ -39,20 +45,16 @@ MainWindow::MainWindow(Environment *env, QWidget *parent)
     fileMenu->addAction(fileRemoveWidgetAction);
 
     QAction *fileComputeAction = new QAction("Compute",this);
-    connect(fileComputeAction,SIGNAL(triggered()),m_renderWidgets.first(),SLOT(doCompute()));
     fileMenu->addAction(fileComputeAction);
 
     menuBar()->addMenu(fileMenu);
 
-//  CROSS SECTION
-    CrossSectionRenderer *widget = new CrossSectionRenderer(m_environment, m_mainWidget);
-    m_layout->addWidget(widget);
-    widget->show();
+    // SIDE BAR
+    SideBar *sideBar = new SideBar(m_environment,m_mainWidget);
+    m_layout->addWidget(sideBar,1);
 
-    // TransferFunction
-    TransferFunctionWidget *tfWidget = new TransferFunctionWidget(m_environment, m_mainWidget);
-    m_layout->addWidget(tfWidget);
-    tfWidget->show();
+    connect(fileComputeAction,SIGNAL(triggered()),this,SLOT(computeActionTriggered()));
+    fileMenu->addAction(fileComputeAction);
 }
 
 MainWindow::~MainWindow()
@@ -110,6 +112,10 @@ void MainWindow::fileOpen()
         m_environment->volume()->load(fileName);
     }
 
+}
+
+void MainWindow::computeActionTriggered(){
+    emit doCompute();
 }
 
 // WORKAROUND

@@ -57,8 +57,8 @@ void RenderWidget::createTransferFunction(){
 void RenderWidget::mousePressEvent(QMouseEvent *event)
 {
     setFocus();
-    m_currentX = qreal(event->x());
-    m_currentY = qreal(event->y());
+    m_currentX = qreal(event->pos().x());
+    m_currentY = qreal(event->pos().y());
 
     m_previousX = m_currentX;
     m_previousY = m_currentY;
@@ -68,8 +68,9 @@ void RenderWidget::mousePressEvent(QMouseEvent *event)
 
 void RenderWidget::mouseDoubleClickEvent(QMouseEvent *event) {
     setFocus();
-    m_currentX = qreal(event->x());
-    m_currentY = qreal(event->y());
+    m_currentX = qreal(event->pos().x());
+    m_currentY = qreal(event->pos().y());
+
 
     m_lightCoords = QVector3D(m_currentX, m_currentY, 0.0f);
     m_lightCoords[0] = (m_lightCoords[0]/width()) * 2 - 1;
@@ -164,26 +165,6 @@ void RenderWidget::initializeGL()
     // initialize geometry
     Geometry::instance();
 
-    //Cube
-    if (!m_cubeProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/cube-vs.glsl"))
-        qDebug() << "Could not load cube vertex shader!";
-
-    if (!m_cubeProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/cube-fs.glsl"))
-        qDebug() << "Could not load cube fragment shader!";
-
-    if (!m_cubeProgram.link())
-        qDebug() << "Could not link cube shader program!";
-
-    //Block
-    if (!m_blockProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/block-vs.glsl"))
-        qDebug() << "Could not load block vertex shader!";
-
-    if (!m_blockProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/block-fs.glsl"))
-        qDebug() << "Could not load block fragment shader!";
-
-    if (!m_blockProgram.link())
-        qDebug() << "Could not link block shader program!";
-
     //Histogram
     if (!m_histogramProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/histogram-vs.glsl"))
         qDebug() << "Could not load histogram vertex shader!";
@@ -233,6 +214,7 @@ void RenderWidget::initializeGL()
 
 void RenderWidget::doCompute()
 {
+    qDebug() << "DO COMPUTE IS CALLED";
     if (m_volumeTexture.width() != m_environment->volume()->width() || m_volumeTexture.height() != m_environment->volume()->height() || m_volumeTexture.depth() != m_environment->volume()->depth())
     {
         if (m_volumeTexture.isCreated())
@@ -309,9 +291,9 @@ void RenderWidget::paintGL()
 //    volumeToUnitCoordinates.scale(1.0f/float(m_environment->volume()->width()),1.0f/float(m_environment->volume()->height()),1.0f/float(m_environment->volume()->depth()));
 
     QMatrix4x4 modelViewProjectionMatrix = m_projectionMatrix*m_modelViewMatrix*volumeToUnitCoordinates;
-    QVector3D blockSize = QVector3D(float(BLOCKDIMENSION),float(BLOCKDIMENSION),float(BLOCKDIMENSION));
-
+    // QVector3D blockSize = QVector3D(float(BLOCKDIMENSION),float(BLOCKDIMENSION),float(BLOCKDIMENSION));
     QVector3D volumeSize = QVector3D(float(m_environment->volume()->width()),float(m_environment->volume()->height()),float(m_environment->volume()->depth()));
+
     m_raymarchingProgram.bind();
     m_raymarchingProgram.setUniformValue("MVP",modelViewProjectionMatrix.inverted());
     // qDebug() << m_iniScale << " <- m_iniScale but in renderwidget";
@@ -322,19 +304,24 @@ void RenderWidget::paintGL()
 
     m_backgroundColor = QVector4D(1,1,1,1);
     m_raymarchingProgram.setUniformValue("backgroundColor", m_backgroundColor);
+
+    GLuint samplerLocation1 = m_raymarchingProgram.uniformLocation("volumeTexture");
+    glUniform1i(samplerLocation1, 0);
     m_raymarchingProgram.setUniformValue("lightDir",m_lightCoords);
 
     glActiveTexture(GL_TEXTURE0 + 0);
-    m_raymarchingProgram.setUniformValue("volumeTexture",0);
+    glBindTexture(GL_TEXTURE_3D, m_volumeTexture.textureId());
 
+    glEnable(GL_TEXTURE_3D);
     m_environment->volume()->bind();
 
     Geometry::instance()->bindQuad();
 
-    int location = m_raymarchingProgram.attributeLocation("vertexPosition");
-    m_raymarchingProgram.enableAttributeArray(location);
+//    int location = m_raymarchingProgram.attributeLocation("vertexPosition");
+//    m_raymarchingProgram.enableAttributeArray(location);
 
-    m_raymarchingProgram.setAttributeBuffer(location,GL_FLOAT,0,3,sizeof(QVector3D));
+//    m_raymarchingProgram.setAttributeBuffer(location,GL_FLOAT,0,3,sizeof(QVector3D));
+
 
     GLuint samplerLocation = m_raymarchingProgram.uniformLocation("transferFunction");
     glUniform1i(samplerLocation, 1);
@@ -343,7 +330,7 @@ void RenderWidget::paintGL()
 
     Geometry::instance()->drawQuad();
 
-    glActiveTexture(GL_TEXTURE0);
+//    glActiveTexture(GL_TEXTURE0);
 
     m_environment->volume()->release();
 
@@ -356,23 +343,11 @@ void RenderWidget::paintGL()
     drawSlice();
     m_lightProgram.release();
 
-    glViewport(0,0,m_histogramTexture.width(),m_histogramTexture.height());
-
-    m_histogramProgram.bind();
-    Geometry::instance()->bindQuad();
-
-    glBindImageTexture(0,m_histogramTexture.textureId(),0,GL_FALSE,0,GL_READ_ONLY,GL_R32UI);
-
-    location = m_histogramProgram.attributeLocation("vertexPosition");
+    int location = m_histogramProgram.attributeLocation("vertexPosition");
     m_histogramProgram.enableAttributeArray(location);
     m_histogramProgram.setAttributeBuffer(location,GL_FLOAT,0,3,sizeof(QVector3D));
 
-    Geometry::instance()->drawQuad();
-    m_histogramProgram.release();
-
-    m_histogramTexture.release();
-
-
+    glUseProgram(0);
 }
 
 QVector3D RenderWidget::arcballVector(qreal x, qreal y)

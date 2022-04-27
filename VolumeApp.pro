@@ -14,10 +14,13 @@ SOURCES += \
     crosssectionrenderer.cpp \
     environment.cpp \
     geometry.cpp \
+    histogramwidget.cpp \
     main.cpp \
     mainwindow.cpp \
     node.cpp \
     renderwidget.cpp \
+    sidebar.cpp \
+    transferfunctionbuttonbar.cpp \
     transferfunctionrenderer.cpp \
     transferfunctiontexturegenerator.cpp \
     transferfunctionwidget.cpp \
@@ -27,9 +30,12 @@ HEADERS += \
     crosssectionrenderer.h \
     environment.h \
     geometry.h \
+    histogramwidget.h \
     mainwindow.h \
     node.h \
     renderwidget.h \
+    sidebar.h \
+    transferfunctionbuttonbar.h \
     transferfunctionrenderer.h \
     transferfunctiontexturegenerator.h \
     transferfunctionwidget.h \

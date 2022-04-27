@@ -67,10 +67,13 @@ void TransferFunctionTextureGenerator::sortNodesByXCoord(){
 void TransferFunctionTextureGenerator::placeMiddleValues(){
     //MAKE TEMPORARY QVector<QVector<float>>
     QVector<QVector<float>> temp;
+    int currNodeIdx = 0;
     //CREATE X0 VALUE
     QVector<float> x0 = {0,0,0,0,0};
+    if (m_nodes[0]->x() == .0){
+        currNodeIdx++;
+    }
     temp.append(x0);
-    int currNodeIdx = 0;
     const int numMiddleValues = m_size-m_nodes.size();
 
     for (int i=0; i<numMiddleValues; i++){
@@ -83,9 +86,9 @@ void TransferFunctionTextureGenerator::placeMiddleValues(){
         }
         QVector<float> midVal(5);
         midVal[0] = x;
-        //CASE ON CURRNODE = -1
+        //CASE ON CURRNODE = 0
         if (currNodeIdx==0){
-            //INTERPOLATE BETWEEN X0 AND M_NODES.at(0)
+            //INTERPOLATE BETWEEN X0 AND m_nodedata[0]
             midVal = interpolate(x0,m_nodeData[0],x);
         }
         else if (currNodeIdx >= m_nodes.size()){ //IF PAST LAST NODE

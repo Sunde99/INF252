@@ -9,6 +9,7 @@
 #include <QBoxLayout>
 #include "transferfunctionrenderer.h"
 #include "environment.h"
+#include "transferfunctionbuttonbar.h"
 
 class TransferFunctionWidget : public QWidget
 {
@@ -21,23 +22,19 @@ protected:
 signals:
     void updateNodeValues();
     void updateTransferFunctionTexture();
-    void signalCreateNewNode();
+    void createNewNodeSignal();
+    void nodeSelectedSignal(Node *node);
 
 public slots:
-    void setColorName(QColor color);
-    void setColorButtonColor(QColor color);
     void updateTransferFunction();
-    void createNewNode();
-    void nodeSelected(Node *node);
+    void createNewNodeSlot();
+    void nodeSelectedSlot(Node *node);
 private:
     Environment * m_environment;
-    QBoxLayout *m_layout;
-    QColorDialog *m_colorDialog;
-    QLabel *m_colorNameTextLabel;
-    QPushButton *m_colorDialogButton;
+    TransferFunctionButtonBar * m_buttonBar;
+    QBoxLayout * m_layout;
     TransferFunctionRenderer *m_transferFunctionBox;
     QPushButton *m_submitTransferFunctionChangesButton;
-    QPushButton *m_addNodeButton;
     Node *m_selectedNode;
 };
 

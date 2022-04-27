@@ -17,11 +17,16 @@ public:
     ~MainWindow();
     bool askForIni();
 
+signals:
+    void doCompute();
+
+
 public slots:
     void fileOpen();
     void addWidget();
     void fileOpenIni();
     void removeWidget();
+    void computeActionTriggered();
 
 private:
     Environment *m_environment;

@@ -12,14 +12,16 @@ public:
 
 protected:
     virtual void paintEvent(QPaintEvent *event);
+    virtual void resizeEvent(QResizeEvent *event);
 signals:
-    void signalUpdateNodeValues();
-    void signalNodeSelected(Node *node);
+    void updateNodeValuesSignal();
+    void nodeSelectedSignal(Node *node);
 public slots:
-    void slotUpdateNodeValues();
+    void updateNodeValuesSlot();
     void createNewNode();
-    void slotNodeSelected(Node *node = nullptr);
+    void nodeSelectedSlot(Node *node = nullptr);
 private:
+    void createDefaultNodes();
     Environment * m_environment;
 
 };

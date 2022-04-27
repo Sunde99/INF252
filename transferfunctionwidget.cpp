@@ -5,36 +5,22 @@
 #include <QLabel>
 #include <QBoxLayout>
 #include <QColor>
+#include <QPalette>
+#include "histogramwidget.h"
+#include "crosssectionrenderer.h"
 
 TransferFunctionWidget::TransferFunctionWidget(Environment *env, QWidget *parent)
     : QWidget{parent},
     m_environment(env)
 {
+
     m_layout = new QBoxLayout(QBoxLayout::TopToBottom,this);
-    setLayout(m_layout);
 
-    m_colorDialogButton = new QPushButton("Color",this);
-    m_colorDialog = new QColorDialog(this);
-    m_colorNameTextLabel = new QLabel("None",this);
+    // TRANSFER FUNCTION
     m_transferFunctionBox = new TransferFunctionRenderer(m_environment,this);
+    // SUBMIT TF CHANGES
     m_submitTransferFunctionChangesButton = new QPushButton("Submit",this);
-    m_addNodeButton = new QPushButton("+",this);
-
-    //Clicking the colog dialog button opens the color menu
-    connect(
-        m_colorDialogButton, SIGNAL(clicked()),
-        m_colorDialog, SLOT(open())
-    );
-    //sets the color text label to the color selected after confirming color menu
-    connect(
-        m_colorDialog, SIGNAL(colorSelected(QColor)),
-        this, SLOT(setColorName(QColor))
-    );
-    //Changes the colorDialogButton's color when a color is selected
-    connect(
-        m_colorDialog, SIGNAL(colorSelected(QColor)),
-        this, SLOT(setColorButtonColor(QColor))
-    );
+    m_buttonBar = new TransferFunctionButtonBar(m_environment, this);
     connect(
         m_submitTransferFunctionChangesButton, SIGNAL(clicked()),
         this, SLOT(updateTransferFunction())
@@ -44,30 +30,23 @@ TransferFunctionWidget::TransferFunctionWidget(Environment *env, QWidget *parent
         this, SIGNAL(updateTransferFunctionTexture()),
         m_environment,SLOT(slotTransferFunctionChanged())
     );
-    //Adds a new node when + button is clicked
-    connect(
-        m_addNodeButton, SIGNAL(clicked()),
-        this, SLOT(createNewNode())
-    );
 
-    m_layout->addWidget(m_colorDialogButton);
-    m_layout->addWidget(m_colorDialog);
-    m_layout->addWidget(m_colorNameTextLabel);
-    m_layout->addWidget(m_addNodeButton);
-    m_layout->addWidget(m_transferFunctionBox);
-    m_layout->addWidget(m_submitTransferFunctionChangesButton);
+    //HISTOGRAM
+    HistogramWidget *hgWidget = new HistogramWidget(m_environment, this);
+    hgWidget->setFixedSize(this->size());
+    connect(this->parentWidget()->parentWidget()->parentWidget(),SIGNAL(doCompute()),hgWidget,SLOT(doCompute()));
+
+    m_layout->addWidget(m_buttonBar,1);
+    m_layout->addWidget(m_transferFunctionBox,5);
+    m_layout->addWidget(hgWidget,1);
+    m_layout->addWidget(m_submitTransferFunctionChangesButton,1);
+
+    m_buttonBar->show();
 }
 
 //SLOT
-void TransferFunctionWidget::createNewNode(){
-    emit signalCreateNewNode();
-}
-
-//SLOT
-void TransferFunctionWidget::nodeSelected(Node *node){
-    m_selectedNode = node;
-    setColorName(m_selectedNode->getColor());
-    setColorButtonColor(m_selectedNode->getColor());
+void TransferFunctionWidget::createNewNodeSlot(){
+    emit createNewNodeSignal();
 }
 
 //SLOT
@@ -76,13 +55,7 @@ void TransferFunctionWidget::updateTransferFunction(){
     emit updateTransferFunctionTexture();
 }
 
-//SLOT
-void TransferFunctionWidget::setColorName(QColor color){
-    m_colorNameTextLabel->setText(color.name());
-    m_selectedNode->setColor(color);
-}
-
-//SLOT
-void TransferFunctionWidget::setColorButtonColor(QColor color){
-    m_colorDialogButton->setPalette(QPalette(color));
+void TransferFunctionWidget::nodeSelectedSlot(Node *node){
+    m_selectedNode = node;
+    emit nodeSelectedSignal(node);
 }
