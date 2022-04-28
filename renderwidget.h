@@ -13,7 +13,7 @@ class RenderWidget : public QOpenGLWidget, protected QOpenGLExtraFunctions
 
 public:
     RenderWidget(Environment *env, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    QVector3D m_iniScale;
+    QVector3D m_iniScale = QVector3D(1, 1, 1);
 
 public slots:
     virtual void doCompute();
