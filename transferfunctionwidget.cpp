@@ -33,7 +33,6 @@ TransferFunctionWidget::TransferFunctionWidget(Environment *env, QWidget *parent
 
     //HISTOGRAM
     HistogramWidget *hgWidget = new HistogramWidget(m_environment, this);
-    hgWidget->setFixedSize(this->size());
     connect(this->parentWidget()->parentWidget()->parentWidget(),SIGNAL(doCompute()),hgWidget,SLOT(doCompute()));
 
     m_layout->addWidget(m_buttonBar,1);

@@ -6,6 +6,7 @@ HistogramWidget::HistogramWidget(Environment *env, QWidget *parent)
       m_volumeTexture(QOpenGLTexture::Target3D),
       m_histogramTexture(QOpenGLTexture::Target2D)
 {
+    m_width = 1;
 }
 
 
@@ -43,7 +44,9 @@ void HistogramWidget::initializeGL(){
 
 
 void HistogramWidget::resizeGL(int w, int h){
-
+    qDebug() << "bruh" << w << h << size().width() << size().height();
+    m_width = w;
+    update();
 }
 
 
@@ -63,6 +66,9 @@ void HistogramWidget::paintGL(){
     int location = m_histogramProgram.attributeLocation("vertexPosition");
     m_histogramProgram.enableAttributeArray(location);
     m_histogramProgram.setAttributeBuffer(location,GL_FLOAT,0,3,sizeof(QVector3D));
+    float widthMult = m_width/227.f;
+    qDebug() << widthMult;
+    m_histogramProgram.setUniformValue("width",widthMult);
 
     Geometry::instance()->drawQuad();
     m_histogramProgram.release();

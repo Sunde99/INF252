@@ -29,6 +29,7 @@ private:
     QOpenGLTexture m_histogramTexture;
     QOpenGLShaderProgram m_histogramProgram;
     QOpenGLShaderProgram m_computeProgram;
+    float m_width;
 
 };
 
