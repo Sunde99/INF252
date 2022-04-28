@@ -24,8 +24,8 @@ MainWindow::MainWindow(Environment *env, QWidget *parent)
 
     setCentralWidget(m_mainWidget);
 //    addWidget();
-    RenderWidget *widget = new RenderWidget(m_environment,m_mainWidget);
-    m_layout->addWidget(widget,2);
+    m_renderWidget = new RenderWidget(m_environment,m_mainWidget);
+    m_layout->addWidget(m_renderWidget,2);
 
     QMenu *fileMenu = new QMenu("File");
 
@@ -73,22 +73,15 @@ bool MainWindow::askForIni()
 
 void MainWindow::fileOpenIni()
 {
-    qDebug() << "STARTED fileOpenIni";
     QString fileName = QFileDialog::getOpenFileName(this,"Open Volume File",QString(),"*.ini");
 
     if (!fileName.isEmpty())
     {
-        qDebug() << fileName << " <- FILENAME";
         QSettings settings(fileName, QSettings::IniFormat);
-        qDebug() << "Made Settings";
         settings.beginGroup("DatFile");
-        qDebug() << "Begun group";
         const QStringList childKeys = settings.childKeys();
-        qDebug() << "Made ChildKeys";
         int i = 0;
-        qDebug() << "Created int i";
-        QVector3D iniScale = m_renderWidget->m_iniScale; // <- KRÆSJER HER!!!!!!!!!!! NBNBNBNBNBNB! TODO TODO
-        qDebug() << "Made iniScale";
+        QVector3D iniScale = m_renderWidget->m_iniScale;
         foreach (const QString &childKey, childKeys) {
             qDebug() << "Loop";
             iniScale[i++] = settings.value(childKey).toFloat();
@@ -98,7 +91,6 @@ void MainWindow::fileOpenIni()
         m_renderWidget->m_iniScale = iniScale;
         settings.endGroup();
     }
-    qDebug() << "END OF fileOpenIni";
 }
 
 void MainWindow::fileOpen()

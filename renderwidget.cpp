@@ -296,7 +296,7 @@ void RenderWidget::paintGL()
 
     m_raymarchingProgram.bind();
     m_raymarchingProgram.setUniformValue("MVP",modelViewProjectionMatrix.inverted());
-    // qDebug() << m_iniScale << " <- m_iniScale but in renderwidget";
+    qDebug() << m_iniScale << " <- m_iniScale but in renderwidget";
     m_raymarchingProgram.setUniformValue("volumeSpacing",m_iniScale);
 
     // qDebug() << volumeSize << " <- volumeSize in renderwidget";
