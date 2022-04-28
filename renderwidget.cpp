@@ -60,6 +60,18 @@ void RenderWidget::mousePressEvent(QMouseEvent *event)
     m_currentX = qreal(event->pos().x());
     m_currentY = qreal(event->pos().y());
 
+    m_previousX = m_currentX;
+    m_previousY = m_currentY;
+
+    update();
+}
+
+void RenderWidget::mouseDoubleClickEvent(QMouseEvent *event) {
+    setFocus();
+    m_currentX = qreal(event->pos().x());
+    m_currentY = qreal(event->pos().y());
+
+
     m_lightCoords = QVector3D(m_currentX, m_currentY, 0.0f);
     m_lightCoords[0] = (m_lightCoords[0]/width()) * 2 - 1;
     m_lightCoords[1] = (m_lightCoords[1]/height()) * 2 - 1;
@@ -276,20 +288,25 @@ void RenderWidget::paintGL()
     QMatrix4x4 volumeToUnitCoordinates;
     volumeToUnitCoordinates.translate(-1.0f,-1.0f,-1.0f);
     volumeToUnitCoordinates.scale(2.0f);
-    volumeToUnitCoordinates.scale(1.0f/float(m_environment->volume()->width()),1.0f/float(m_environment->volume()->height()),1.0f/float(m_environment->volume()->depth()));
+//    volumeToUnitCoordinates.scale(1.0f/float(m_environment->volume()->width()),1.0f/float(m_environment->volume()->height()),1.0f/float(m_environment->volume()->depth()));
 
     QMatrix4x4 modelViewProjectionMatrix = m_projectionMatrix*m_modelViewMatrix*volumeToUnitCoordinates;
-//    QVector3D blockSize = QVector3D(float(BLOCKDIMENSION),float(BLOCKDIMENSION),float(BLOCKDIMENSION));
+    // QVector3D blockSize = QVector3D(float(BLOCKDIMENSION),float(BLOCKDIMENSION),float(BLOCKDIMENSION));
     QVector3D volumeSize = QVector3D(float(m_environment->volume()->width()),float(m_environment->volume()->height()),float(m_environment->volume()->depth()));
 
     m_raymarchingProgram.bind();
     m_raymarchingProgram.setUniformValue("MVP",modelViewProjectionMatrix.inverted());
-    m_raymarchingProgram.setUniformValue("volumeSpacing",QVector3D(1,1,1));
+    qDebug() << m_iniScale << " <- m_iniScale but in renderwidget";
+    m_raymarchingProgram.setUniformValue("volumeSpacing",m_iniScale);
+
+    // qDebug() << volumeSize << " <- volumeSize in renderwidget";
     m_raymarchingProgram.setUniformValue("volumeScale",volumeSize);
+
+    m_backgroundColor = QVector4D(0.9,0.9,0.8,1);
+    m_raymarchingProgram.setUniformValue("backgroundColor", m_backgroundColor);
 
     GLuint samplerLocation1 = m_raymarchingProgram.uniformLocation("volumeTexture");
     glUniform1i(samplerLocation1, 0);
-    QVector4D newLightPos = QVector4D(m_lightCoords, 1.0) * modelViewProjectionMatrix;
     m_raymarchingProgram.setUniformValue("lightDir",m_lightCoords);
 
     glActiveTexture(GL_TEXTURE0 + 0);
