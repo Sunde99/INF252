@@ -15,8 +15,7 @@ public:
 
 signals:
 public slots:
-    void setColorName(QColor color);
-    void setColorButtonColor(QColor color);
+    void setColor(QColor color);
     void nodeSelectedSlot(Node* = nullptr);
 
 private:

@@ -128,12 +128,21 @@ void TransferFunctionRenderer::paintEvent(QPaintEvent * event){
         p.drawLine(QLine(0,y,fullWidgetRect.width(),y));
     }
     QVector<Node*> nodes = m_environment->getNodes();
+    QLine lineFromZeroToNodeOne = QLine(QPoint(0,0),nodes.at(0)->pos());
+    p.drawLine(lineFromZeroToNodeOne);
     for (int i=1; i<nodes.size(); i++){
-        Node* node1 = nodes.at(i-1);
-        Node* node2 = nodes.at(i);
-        QLine lineBetweenNodes = QLine(node1->pos(),node2->pos());
+        QPoint node1Pos = nodes.at(i-1)->pos();
+        QSize nodeSize = nodes.at(i-1)->size();
+        QPoint node1MidPos = QPoint(node1Pos.x()+nodeSize.width()/2.f,node1Pos.y()+nodeSize.height()/2.f);
+        QPoint node2Pos = nodes.at(i)->pos();
+        QPoint node2MidPos = QPoint(node2Pos.x()+nodeSize.width()/2.f,node2Pos.y()+nodeSize.height()/2.f);
+        QLine lineBetweenNodes = QLine(node1MidPos,node2MidPos);
         p.drawLine(lineBetweenNodes);
     }
+    QPoint lastNodePos = nodes.at(nodes.size()-1)->pos();
+    QPoint lastPoint = QPoint(fullWidgetRect.width(),lastNodePos.y());
+    QLine lineFromLastNodeToEnd = QLine(lastNodePos,lastPoint);
+    p.drawLine(lineFromLastNodeToEnd);
     p.end();
 }
 
