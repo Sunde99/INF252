@@ -302,7 +302,7 @@ void RenderWidget::paintGL()
     // qDebug() << volumeSize << " <- volumeSize in renderwidget";
     m_raymarchingProgram.setUniformValue("volumeScale",volumeSize);
 
-    m_backgroundColor = QVector4D(1,1,1,1);
+    m_backgroundColor = QVector4D(0.9,0.9,0.8,1);
     m_raymarchingProgram.setUniformValue("backgroundColor", m_backgroundColor);
 
     GLuint samplerLocation1 = m_raymarchingProgram.uniformLocation("volumeTexture");

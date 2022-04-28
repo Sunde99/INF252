@@ -89,9 +89,5 @@ void main(void)
     } else{
 //        gl_FragDepth = 1;
     }
-<<<<<<< HEAD
     fragColor += backgroundColor * (1-fragColor.a);
-
-=======
->>>>>>> b4cd06f36b751f62466c1fdb37cbf8b7d45c1429
 }
