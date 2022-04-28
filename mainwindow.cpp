@@ -4,8 +4,11 @@
 #include <QAction>
 #include <QFileDialog>
 #include <QHBoxLayout>
+#include <qMessageBox.h>
+#include <QSettings>
 #include "crosssectionrenderer.h"
 #include "transferfunctionwidget.h"
+#include "renderwidget.h"
 #include "histogramwidget.h"
 #include "sidebar.h"
 
@@ -21,8 +24,8 @@ MainWindow::MainWindow(Environment *env, QWidget *parent)
 
     setCentralWidget(m_mainWidget);
 //    addWidget();
-    RenderWidget *widget = new RenderWidget(m_environment,m_mainWidget);
-    m_layout->addWidget(widget,2);
+    m_renderWidget = new RenderWidget(m_environment,m_mainWidget);
+    m_layout->addWidget(m_renderWidget,2);
 
     QMenu *fileMenu = new QMenu("File");
 
@@ -55,12 +58,53 @@ MainWindow::~MainWindow()
 {
 }
 
+bool MainWindow::askForIni()
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "ini", "Add ini?",
+                                  QMessageBox::Yes | QMessageBox::No);
+    if (reply == QMessageBox::Yes) {
+        return true;
+    } else {
+
+        return false;
+    }
+}
+
+void MainWindow::fileOpenIni()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,"Open Volume File",QString(),"*.ini");
+
+    if (!fileName.isEmpty())
+    {
+        QSettings settings(fileName, QSettings::IniFormat);
+        settings.beginGroup("DatFile");
+        const QStringList childKeys = settings.childKeys();
+        int i = 0;
+        QVector3D iniScale = m_renderWidget->m_iniScale;
+        foreach (const QString &childKey, childKeys) {
+            qDebug() << "Loop";
+            iniScale[i++] = settings.value(childKey).toFloat();
+            // qDebug() << settings.value(childKey).toString() << " <-HERE!!!!!!!";
+        }
+        // qDebug() << iniScale << "<- iniscale";
+        m_renderWidget->m_iniScale = iniScale;
+        settings.endGroup();
+    }
+}
+
 void MainWindow::fileOpen()
 {
     QString fileName = QFileDialog::getOpenFileName(this,"Open Volume File",QString(),"*.dat");
 
     if (!fileName.isEmpty())
     {
+        if (askForIni()) {
+            qDebug() << "You clicked YES";
+            fileOpenIni();
+        } else {
+            qDebug() << "You did NOT click yes";
+        }
         m_environment->volume()->load(fileName);
     }
 
@@ -97,6 +141,7 @@ void MainWindow::addWidget()
     {
         RenderWidget *widget = new RenderWidget(m_environment,m_mainWidget);
         m_layout->addWidget(widget);
+        m_renderWidget = widget;
         m_renderWidgets.push_back(widget);
     }
 }
