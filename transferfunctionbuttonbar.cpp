@@ -24,16 +24,12 @@ TransferFunctionButtonBar::TransferFunctionButtonBar(Environment *env, QWidget *
         m_colorDialogButton, SIGNAL(clicked()),
         m_colorDialog, SLOT(open())
     );
-    //sets the color text label to the color selected after confirming color menu
-    connect(
-        m_colorDialog, SIGNAL(colorSelected(QColor)),
-        this, SLOT(setColorName(QColor))
-    );
     //Changes the colorDialogButton's color when a color is selected
     connect(
         m_colorDialog, SIGNAL(colorSelected(QColor)),
-        this, SLOT(setColorButtonColor(QColor))
+        this, SLOT(setColor(QColor))
     );
+
     //Adds a new node when + button is clicked
     connect(
         m_addNodeButton, SIGNAL(clicked()),
@@ -48,16 +44,14 @@ TransferFunctionButtonBar::TransferFunctionButtonBar(Environment *env, QWidget *
 
 //SLOT
 void TransferFunctionButtonBar::nodeSelectedSlot(Node *node){
-    setColorName(node->getColor());
-    setColorButtonColor(node->getColor());
+    m_colorDialogButton->setPalette(QPalette(node->getColor()));
+    m_colorNameTextLabel->setText(node->getColor().name());
+    m_selectedNode = node;
 }
 
 //SLOT
-void TransferFunctionButtonBar::setColorName(QColor color){
+void TransferFunctionButtonBar::setColor(QColor color){
     m_colorNameTextLabel->setText(color.name());
-}
-
-//SLOT
-void TransferFunctionButtonBar::setColorButtonColor(QColor color){
     m_colorDialogButton->setPalette(QPalette(color));
+    m_selectedNode->setColor(color);
 }

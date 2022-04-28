@@ -4,7 +4,7 @@
 #include <QAction>
 #include <QFileDialog>
 #include <QHBoxLayout>
-#include <qMessageBox.h>
+#include <QMessageBox>
 #include <QSettings>
 #include "crosssectionrenderer.h"
 #include "transferfunctionwidget.h"
