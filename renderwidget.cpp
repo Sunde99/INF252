@@ -131,7 +131,10 @@ void RenderWidget::mouseMoveEvent(QMouseEvent *event)
 {
     m_currentX = qreal(event->x());
     m_currentY = qreal(event->y());
-    m_lightCoords = QVector3D(m_currentX, m_currentY, 0.0f);
+//    m_lightCoords = QVector3D(m_currentX, m_currentY, 0.0f);
+//    m_lightCoords[0] = (m_lightCoords[0]/width()) * 2 - 1;
+//    m_lightCoords[1] = (m_lightCoords[1]/height()) * 2 - 1;
+
     if (event->buttons() & Qt::LeftButton)
     {
         if (m_currentX != m_previousX || m_currentY != m_previousY)
@@ -307,6 +310,8 @@ void RenderWidget::paintGL()
 
     GLuint samplerLocation1 = m_raymarchingProgram.uniformLocation("volumeTexture");
     glUniform1i(samplerLocation1, 0);
+
+    qDebug() << m_lightCoords << "LIGHT COORDS";
     m_raymarchingProgram.setUniformValue("lightDir",m_lightCoords);
 
     glActiveTexture(GL_TEXTURE0 + 0);
