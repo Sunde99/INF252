@@ -299,10 +299,8 @@ void RenderWidget::paintGL()
 
     m_raymarchingProgram.bind();
     m_raymarchingProgram.setUniformValue("MVP",modelViewProjectionMatrix.inverted());
-    qDebug() << m_iniScale << " <- m_iniScale but in renderwidget";
     m_raymarchingProgram.setUniformValue("volumeSpacing",m_iniScale);
 
-    // qDebug() << volumeSize << " <- volumeSize in renderwidget";
     m_raymarchingProgram.setUniformValue("volumeScale",volumeSize);
 
     m_backgroundColor = QVector4D(0.9,0.9,0.8,1);
@@ -311,7 +309,6 @@ void RenderWidget::paintGL()
     GLuint samplerLocation1 = m_raymarchingProgram.uniformLocation("volumeTexture");
     glUniform1i(samplerLocation1, 0);
 
-    qDebug() << m_lightCoords << "LIGHT COORDS";
     m_raymarchingProgram.setUniformValue("lightDir",m_lightCoords);
 
     glActiveTexture(GL_TEXTURE0 + 0);

@@ -15,3 +15,4 @@ void Environment::setNodes(QVector<Node*> nodes){
 void Environment::slotTransferFunctionChanged(){
     emit signalTransferFunctionChanged();
 }
+

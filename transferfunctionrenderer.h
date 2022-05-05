@@ -16,10 +16,12 @@ protected:
 signals:
     void updateNodeValuesSignal();
     void nodeSelectedSignal(Node *node);
+    void updateTransferFunction();
 public slots:
     void updateNodeValuesSlot();
     void createNewNode();
     void nodeSelectedSlot(Node *node = nullptr);
+    void updateTransferFunctionSlot();
 private:
     void createDefaultNodes();
     Environment * m_environment;

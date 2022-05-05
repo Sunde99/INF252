@@ -26,6 +26,11 @@ Node::Node(QWidget *parent, QVector2D pos, QColor color)
         this, SIGNAL(nodeSelected(Node*)),
         parent, SLOT(nodeSelectedSlot(Node*))
     );
+
+    connect(
+        this, SIGNAL(updateTransferFunctionSignal()),
+        parent, SLOT(updateTransferFunctionSlot())
+    );
 }
 
 QSize Node::sizeHint() const{
@@ -57,7 +62,6 @@ void Node::paintEvent(QPaintEvent *event){
  * is triggered when the Submit button in TransferFunctionWidget is clicked
  */
 void Node::updateValues(){
-    //MOVING THE YELLOW NODE MAKES THE TRANSFER FUNCTION NOT WORK SOMEHOW??s
     QPoint newWidgetPos = this->pos();
     QRect parentRect = parentWidget()->rect();
     QVector2D newPos = QVector2D(
@@ -91,6 +95,8 @@ void Node::mouseMoveEvent(QMouseEvent *event){
     auto pos = this->pos() + event->pos();
     moveWithinBoundaries(pos.x(),pos.y());
     parentWidget()->repaint();
+    updateValues();
+    emit updateTransferFunctionSignal();
 }
 
 void Node::mousePressEvent(QMouseEvent *event){

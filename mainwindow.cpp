@@ -85,9 +85,7 @@ void MainWindow::fileOpenIni()
         foreach (const QString &childKey, childKeys) {
             qDebug() << "Loop";
             iniScale[i++] = settings.value(childKey).toFloat();
-            // qDebug() << settings.value(childKey).toString() << " <-HERE!!!!!!!";
         }
-        // qDebug() << iniScale << "<- iniscale";
         m_renderWidget->m_iniScale = iniScale;
         settings.endGroup();
     }
@@ -103,7 +101,7 @@ void MainWindow::fileOpen()
             qDebug() << "You clicked YES";
             fileOpenIni();
         } else {
-            qDebug() << "You did NOT click yes";
+            qDebug() << "You did NOT clicked yes";
         }
         m_environment->volume()->load(fileName);
     }

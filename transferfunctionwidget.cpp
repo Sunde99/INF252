@@ -58,3 +58,4 @@ void TransferFunctionWidget::nodeSelectedSlot(Node *node){
     m_selectedNode = node;
     emit nodeSelectedSignal(node);
 }
+

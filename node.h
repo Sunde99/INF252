@@ -29,6 +29,7 @@ protected:
     virtual QSize sizeHint() const;
 signals:
     void nodeSelected(Node* = nullptr);
+    void updateTransferFunctionSignal();
 public slots:
     void updateValues();
 private:
