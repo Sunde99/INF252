@@ -43,30 +43,36 @@ void TransferFunctionRenderer::createDefaultNodes(){
     Node *node1 = new Node(
         this,
         QVector2D(.1,.1),
-        QColor(255,0,0)
+        QColor(233,185,110)
     );
 
     Node *node2 = new Node(
         this,
-        QVector2D(.4,.4),
-        QColor(255,255,0)
+        QVector2D(.2,.1),
+        QColor(233,185,110)
     );
     Node *node3 = new Node(
         this,
-        QVector2D(.6,.6),
-        QColor(0,255,0)
+        QVector2D(.225,.125),
+        QColor(255,0,0)
     );
 
     Node *node4 = new Node(
         this,
-        QVector2D(.8,.8),
-        QColor(0,255,255)
+        QVector2D(.3,.125),
+        QColor(255,0,0)
     );
 
     Node *node5 = new Node(
         this,
-        QVector2D(1,1),
-        QColor(0,0,255)
+        QVector2D(.325,.5),
+        QColor(255,255,255)
+    );
+
+    Node *node6 = new Node(
+        this,
+        QVector2D(1.f,1.f),
+        QColor(255,255,255)
     );
 
     QVector<Node*> nodes;
@@ -75,6 +81,7 @@ void TransferFunctionRenderer::createDefaultNodes(){
     nodes.emplaceBack(node3);
     nodes.emplaceBack(node4);
     nodes.emplaceBack(node5);
+    nodes.emplaceBack(node6);
     m_environment->setNodes(nodes);
 }
 

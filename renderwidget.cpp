@@ -12,12 +12,35 @@ RenderWidget::RenderWidget(Environment *env, QWidget *parent, Qt::WindowFlags f)
     m_histogramTexture(QOpenGLTexture::Target2D),
     m_transferFunctionTexture(QOpenGLTexture::Target1D)
 {
+    m_boxSize = QVector3D(1,1,1);
+    m_boxPos = QVector3D(0,0,0);
+    m_epsilonSliderValue = 1;
+    m_rayMarchStepsSliderValue = 1000;
+
     m_modelViewMatrix.setToIdentity();
     setFocus();
 //    m_modelViewMatrix.translate(0.0, 1.0, -3.0*sqrt(3.0));
     m_modelViewMatrix.translate(0.0, 0, -5);
     m_showCompute = false;
     connect(m_environment,SIGNAL(signalTransferFunctionChanged()),this,SLOT(createTransferFunction()));
+
+    //SLIDER RAYMARCH
+    QSlider *sliderRaymarch = new QSlider(Qt::Horizontal, this);
+    sliderRaymarch->setMinimum(100);
+    sliderRaymarch->setMaximum(2000);
+    sliderRaymarch->setValue(m_rayMarchStepsSliderValue);
+    connect(sliderRaymarch,SIGNAL(valueChanged(int)),this,SLOT(raymarchStepsSliderChanged(int)));
+
+    //SLIDER EPSILON
+    QSlider *sliderEpsilon = new QSlider(Qt::Horizontal, this);
+    sliderEpsilon->setMinimum(1);
+    sliderEpsilon->setMaximum(1000);
+    sliderEpsilon->setValue(m_epsilonSliderValue);
+    sliderEpsilon->move(150,0);
+    connect(sliderEpsilon,SIGNAL(valueChanged(int)),this,SLOT(epsilonSliderChanged(int)));
+
+    connect(m_environment,SIGNAL(signalBoundingBoxCorner1Changed(QVector3D*)),this,SLOT(slotBoundingBoxCorner1Changed(QVector3D*)));
+    connect(m_environment,SIGNAL(signalBoundingBoxCorner2Changed(QVector3D*)),this,SLOT(slotBoundingBoxCorner2Changed(QVector3D*)));
 }
 
 
@@ -51,6 +74,42 @@ void RenderWidget::createTransferFunction(){
     void *data = textureData.data();
     m_transferFunctionTexture.setData(0,0,0,width,height,depth,QOpenGLTexture::RGBA,QOpenGLTexture::Float32,data);
 
+    update();
+}
+
+void RenderWidget::slotBoundingBoxCorner1Changed(QVector3D *changeVector){
+    if (changeVector->x() > .0){
+        m_boxSize.setX(changeVector->x());
+    }
+    else if (changeVector->y() > .0){
+        m_boxSize.setY(changeVector->y());
+    }
+    else if (changeVector->z() > .0){
+        m_boxSize.setZ(changeVector->z());
+    }
+    update();
+}
+void RenderWidget::slotBoundingBoxCorner2Changed(QVector3D *changeVector){
+    if (changeVector->x() > .0){
+        m_boxPos.setX(changeVector->x());
+    }
+    else if (changeVector->y() > .0){
+        m_boxPos.setY(changeVector->y());
+    }
+    else if (changeVector->z() > .0){
+        m_boxPos.setZ(changeVector->z());
+    }
+    update();
+}
+
+void RenderWidget::raymarchStepsSliderChanged(int value){
+    m_rayMarchStepsSliderValue = value;
+    update();
+}
+
+
+void RenderWidget::epsilonSliderChanged(int value){
+    m_epsilonSliderValue = value;
     update();
 }
 
@@ -296,7 +355,6 @@ void RenderWidget::paintGL()
 
     m_raymarchingProgram.bind();
     m_raymarchingProgram.setUniformValue("MVP",modelViewProjectionMatrix.inverted());
-    qDebug() << m_iniScale << " <- m_iniScale but in renderwidget";
     m_raymarchingProgram.setUniformValue("volumeSpacing",m_iniScale);
 
     // qDebug() << volumeSize << " <- volumeSize in renderwidget";
@@ -304,10 +362,14 @@ void RenderWidget::paintGL()
 
     m_backgroundColor = QVector4D(0.9,0.9,0.8,1);
     m_raymarchingProgram.setUniformValue("backgroundColor", m_backgroundColor);
-
     GLuint samplerLocation1 = m_raymarchingProgram.uniformLocation("volumeTexture");
     glUniform1i(samplerLocation1, 0);
     m_raymarchingProgram.setUniformValue("lightDir",m_lightCoords);
+    m_raymarchingProgram.setUniformValue("RAYMARCH_STEPS",m_rayMarchStepsSliderValue);
+    float epsilon = float(m_epsilonSliderValue) / 1000.0f;
+    m_raymarchingProgram.setUniformValue("EPSILON",epsilon);
+    m_raymarchingProgram.setUniformValue("boxSize",m_boxSize);
+    m_raymarchingProgram.setUniformValue("boxPos",m_boxPos);
 
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_3D, m_volumeTexture.textureId());

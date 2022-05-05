@@ -19,8 +19,12 @@ public:
     bool hasTransferFunctionChanged() {return m_hasTransferFunctionChanged;};
 signals:
     void signalTransferFunctionChanged();
+    void signalBoundingBoxCorner1Changed(QVector3D *changeVector);
+    void signalBoundingBoxCorner2Changed(QVector3D *changeVector);
 public slots:
     void slotTransferFunctionChanged();
+    void slotBoundingBoxCorner1Changed(QVector3D *changeVector);
+    void slotBoundingBoxCorner2Changed(QVector3D *changeVector);
 
 
 private:

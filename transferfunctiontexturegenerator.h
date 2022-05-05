@@ -18,6 +18,7 @@ private:
     QVector<float> interpolate(QVector<float> node1, QVector<float> node2, float x);
     QVector<float> interpolate(int nodeIdx1, int nodeIdx2, float x);
     float linearInterpolation(float a, float b, float t);
+    float opacityWeightedColorInterpolation(float c1, float c2, float a1, float a2, float t);
 
     QVector<Node*> m_nodes;
     QVector<QVector<float>> m_nodeData;
