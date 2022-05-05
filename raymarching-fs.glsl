@@ -1,6 +1,6 @@
 #version 430
 
-uniform int RAYMARCH_STEPS = 250;
+uniform int RAYMARCH_STEPS = 500;
 uniform float EPSILON = 0.1;
 
 in vec2 fragCoord;
@@ -12,11 +12,14 @@ uniform vec3 volumeScale;
 uniform vec3 volumeSpacing;
 uniform vec3 lightDir = vec3(1.0, 0.0, 0.0);
 uniform vec4 backgroundColor = vec4(1);
+uniform vec3 boxPos;
+uniform vec3 boxSize;
 
 out vec4 fragColor;
 
 // https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
-vec2 boxIntersection(vec3 ro, vec3 rd, vec3 boxSize){
+vec2 boxIntersection(vec3 ro, vec3 rd, vec3 boxSize, vec3 boxPos){
+    ro += boxPos;
     vec3 m = 1.0/rd;
     vec3 n = m*ro;
     vec3 k = abs(m)*boxSize;
@@ -46,6 +49,10 @@ vec3 gradient(vec3 p) {
     );
 }
 
+float rand(vec2 co){
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
 
 void main(void)
 {
@@ -62,7 +69,11 @@ void main(void)
     vec3 rayDir = normalize(far.xyz - near.xyz);
     fragColor = vec4(.0);
 
-    vec2 boundingBox = boxIntersection(rayOrigin,rayDir,volumeSpacing * volumeScale);
+    vec3 maxSize = volumeSpacing*volumeScale;
+    vec3 box = maxSize*boxSize - maxSize*boxPos*0.5;
+    vec3 box2 = maxSize*boxSize - maxSize*boxPos*0.5;
+    vec3 boi = (maxSize - box2) - maxSize*boxPos;
+    vec2 boundingBox = boxIntersection(rayOrigin,rayDir,box,boi);
 
     if (boundingBox.y >= 0.0f && boundingBox.x < boundingBox.y){
         boundingBox.x = max(boundingBox.x,0.0);

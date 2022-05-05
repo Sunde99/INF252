@@ -15,8 +15,19 @@ public:
     explicit SideBar(Environment *env, QWidget *parent = nullptr);
 
 signals:
+    void signalBoundingBoxCorner1Changed(QVector3D *changeVector);
+    void signalBoundingBoxCorner2Changed(QVector3D *changeVector);
+public slots:
+    void boxSizeXSliderChanged(int);
+    void boxSizeYSliderChanged(int);
+    void boxSizeZSliderChanged(int);
+    void boxPosXSliderChanged(int);
+    void boxPosYSliderChanged(int);
+    void boxPosZSliderChanged(int);
 
 private:
+    void createBoxSizeSliders();
+    void createBoxPosSliders();
     Environment *m_environment;
     QBoxLayout *m_layout;
     TransferFunctionWidget *m_tfWidget;

@@ -18,6 +18,10 @@ public:
 public slots:
     virtual void doCompute();
     virtual void createTransferFunction();
+    void raymarchStepsSliderChanged(int);
+    void epsilonSliderChanged(int);
+    void slotBoundingBoxCorner1Changed(QVector3D *changeVector);
+    void slotBoundingBoxCorner2Changed(QVector3D *changeVector);
 
 protected:
     virtual void mousePressEvent(QMouseEvent *event);
@@ -50,6 +54,10 @@ private:
     QOpenGLTexture m_histogramTexture;
     bool m_showCompute;
     QOpenGLTexture m_transferFunctionTexture;
+    int m_rayMarchStepsSliderValue;
+    int m_epsilonSliderValue;
+    QVector3D m_boxSize;
+    QVector3D m_boxPos;
 
 };
 

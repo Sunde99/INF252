@@ -16,3 +16,9 @@ void Environment::slotTransferFunctionChanged(){
     emit signalTransferFunctionChanged();
 }
 
+void Environment::slotBoundingBoxCorner1Changed(QVector3D *changeVector){
+    emit signalBoundingBoxCorner1Changed(changeVector);
+}
+void Environment::slotBoundingBoxCorner2Changed(QVector3D *changeVector){
+    emit signalBoundingBoxCorner2Changed(changeVector);
+}

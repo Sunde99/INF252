@@ -4,10 +4,6 @@ TransferFunctionTextureGenerator::TransferFunctionTextureGenerator(QVector<Node*
     m_nodes(nodes),
     m_size(resolution+nodes.size())
 {
-    QVector<float> zero = {0,0,0,0,0};
-    QVector<float> one = {1,1,1,1,1};
-    QVector<float> half = interpolate(zero,one,0.5);
-    //WHEN SUBMITTING CHANGES I  GET A LIST INDEX OUT OF BOUNDS
 }
 
 QVector<float> TransferFunctionTextureGenerator::generateTextureData(){
@@ -70,10 +66,11 @@ void TransferFunctionTextureGenerator::placeMiddleValues(){
     int currNodeIdx = 0;
     //CREATE X0 VALUE
     QVector<float> x0 = {0,0,0,0,0};
-    if (m_nodes[0]->x() == .0){
+    if (m_nodes[0]->getPos().x() == .0){
         currNodeIdx++;
     }
     temp.append(x0);
+
     const int numMiddleValues = m_size-m_nodes.size();
 
     for (int i=0; i<numMiddleValues; i++){
@@ -107,6 +104,13 @@ float TransferFunctionTextureGenerator::linearInterpolation(float a, float b, fl
     return a + (b-a)*t;
 }
 
+float TransferFunctionTextureGenerator::opacityWeightedColorInterpolation(float c1, float c2, float a1, float a2, float t){
+    float c3 = linearInterpolation(c1,c2,t);
+    float a3 = linearInterpolation(a1,a2,t);
+    if (t<=.0) return c1;
+    return c3/a3;
+}
+
 
 QVector<float> TransferFunctionTextureGenerator::interpolate(QVector<float> node1, QVector<float> node2, float x){
     const float x0 = node1[0];
@@ -114,9 +118,9 @@ QVector<float> TransferFunctionTextureGenerator::interpolate(QVector<float> node
     const float t = (x-x0)/(x1-x0);
     return {
         x,
-        linearInterpolation(node1[1],node2[1],t),
-        linearInterpolation(node1[2],node2[2],t),
-        linearInterpolation(node1[3],node2[3],t),
+        opacityWeightedColorInterpolation(node1[1],node2[1],node1[4],node2[4],t),
+        opacityWeightedColorInterpolation(node1[2],node2[2],node1[4],node2[4],t),
+        opacityWeightedColorInterpolation(node1[3],node2[3],node1[4],node2[4],t),
         linearInterpolation(node1[4],node2[4],t),
     };
 }
