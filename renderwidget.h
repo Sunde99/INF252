@@ -46,7 +46,7 @@ private:
     QOpenGLShaderProgram m_lightProgram;
     QMatrix4x4 m_projectionMatrix;
     QMatrix4x4 m_modelViewMatrix;
-    QVector3D m_lightCoords;
+    QVector3D m_lightCoords = QVector3D(1, 1, 0);
     QVector4D m_backgroundColor;
     qreal m_currentX,m_currentY;
     qreal m_previousX,m_previousY;

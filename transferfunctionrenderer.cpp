@@ -33,6 +33,10 @@ TransferFunctionRenderer::TransferFunctionRenderer(Environment *env, QWidget *pa
         this, SIGNAL(nodeSelectedSignal(Node*)),
         parent, SLOT(nodeSelectedSlot(Node*))
     );
+    connect(
+        this, SIGNAL(updateTransferFunction()),
+        m_environment,SLOT(slotTransferFunctionChanged()) //Why don't this work??
+    );
 }
 
 /**
@@ -87,6 +91,10 @@ void TransferFunctionRenderer::createDefaultNodes(){
 
 void TransferFunctionRenderer::nodeSelectedSlot(Node *node){
     emit nodeSelectedSignal(node);
+}
+
+void TransferFunctionRenderer::updateTransferFunctionSlot() {
+    emit updateTransferFunction();
 }
 
 //SLOT
@@ -163,3 +171,4 @@ void TransferFunctionRenderer::resizeEvent(QResizeEvent *event){
     }
     QWidget::resizeEvent(event);
 }
+
