@@ -16,7 +16,6 @@ public:
     QVector3D m_iniScale = QVector3D(1, 1, 1);
 
 public slots:
-    virtual void doCompute();
     virtual void createTransferFunction();
     void raymarchStepsSliderChanged(int);
     void epsilonSliderChanged(int);
