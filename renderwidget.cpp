@@ -274,43 +274,6 @@ void RenderWidget::initializeGL()
     createTransferFunction();
 }
 
-void RenderWidget::doCompute()
-{
-    qDebug() << "DO COMPUTE IS CALLED";
-    if (m_volumeTexture.width() != m_environment->volume()->width() || m_volumeTexture.height() != m_environment->volume()->height() || m_volumeTexture.depth() != m_environment->volume()->depth())
-    {
-        if (m_volumeTexture.isCreated())
-            m_volumeTexture.destroy();
-
-        m_volumeTexture.setBorderColor(0,0,0,0);
-        m_volumeTexture.setWrapMode(QOpenGLTexture::ClampToBorder);
-        m_volumeTexture.setFormat(QOpenGLTexture::R32F);
-        m_volumeTexture.setMinificationFilter(QOpenGLTexture::Linear);
-        m_volumeTexture.setMagnificationFilter(QOpenGLTexture::Linear);
-        m_volumeTexture.setAutoMipMapGenerationEnabled(false);
-        m_volumeTexture.setSize(m_environment->volume()->width(),m_environment->volume()->height(),m_environment->volume()->depth());
-        m_volumeTexture.allocateStorage();
-    }
-
-
-    int groupSizeX = 4, groupSizeY = 4, groupSizeZ = 4;
-    int numGroupsX = ceilf(float(m_environment->volume()->width())/float(groupSizeX));
-    int numGroupsY = ceilf(float(m_environment->volume()->height())/float(groupSizeY));
-    int numGroupsZ = ceilf(float(m_environment->volume()->depth())/float(groupSizeZ));
-
-    m_computeProgram.bind();
-    m_environment->volume()->bind();
-    glBindImageTexture(0,m_environment->volume()->volumeTexture().textureId(),0,GL_TRUE,0,GL_READ_ONLY,GL_R32F);
-    glBindImageTexture(1,m_volumeTexture.textureId(),0,GL_TRUE,0,GL_WRITE_ONLY,GL_R32F);
-    glBindImageTexture(2,m_histogramTexture.textureId(),0,GL_FALSE,0,GL_READ_WRITE,GL_R32UI);
-    glDispatchCompute(numGroupsX,numGroupsY,numGroupsZ);
-    m_environment->volume()->release();
-    m_computeProgram.release();
-
-    m_showCompute = true;
-    update();
-}
-
 
 void RenderWidget::resizeGL(int w, int h)
 {
@@ -362,7 +325,7 @@ void RenderWidget::paintGL()
 
     m_raymarchingProgram.setUniformValue("volumeScale",volumeSize);
 
-    m_backgroundColor = QVector4D(0.9,0.9,0.8,1);
+    m_backgroundColor = QVector4D(0.0,0.0,1.0,1);
     m_raymarchingProgram.setUniformValue("backgroundColor", m_backgroundColor);
     GLuint samplerLocation1 = m_raymarchingProgram.uniformLocation("volumeTexture");
     glUniform1i(samplerLocation1, 0);

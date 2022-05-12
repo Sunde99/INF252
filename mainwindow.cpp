@@ -83,7 +83,6 @@ void MainWindow::fileOpenIni()
         int i = 0;
         QVector3D iniScale = m_renderWidget->m_iniScale;
         foreach (const QString &childKey, childKeys) {
-            qDebug() << "Loop";
             iniScale[i++] = settings.value(childKey).toFloat();
         }
         m_renderWidget->m_iniScale = iniScale;
@@ -98,10 +97,7 @@ void MainWindow::fileOpen()
     if (!fileName.isEmpty())
     {
         if (askForIni()) {
-            qDebug() << "You clicked YES";
             fileOpenIni();
-        } else {
-            qDebug() << "You did NOT clicked yes";
         }
         m_environment->volume()->load(fileName);
     }

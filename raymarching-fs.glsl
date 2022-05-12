@@ -85,7 +85,6 @@ void main(void)
             vec4 tex = tf(p);
             float density = tex.a/10.f;
             vec3 g = gradient(p);
-            // Slightly blend with gradient scale to make transfer function editor "smarter"
             density = mix(density, density * length(g), 0.5);
             vec3 normal = normalize(g);
             vec3 color = tex.rgb;
@@ -100,5 +99,8 @@ void main(void)
     } else{
 //        gl_FragDepth = 1;
     }
-    fragColor += backgroundColor * (1-fragColor.a);
+    if (fragColor.a < 1.0){
+//        fragColor += backgroundColor * (1.0-fragColor.a);
+         fragColor = vec4(fragColor.rgb * fragColor.a + (1.0 - fragColor.a) * abs(rayDir), 1.0);
+    }
 }

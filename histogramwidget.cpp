@@ -44,7 +44,6 @@ void HistogramWidget::initializeGL(){
 
 
 void HistogramWidget::resizeGL(int w, int h){
-    qDebug() << "bruh" << w << h << size().width() << size().height();
     m_width = w;
     update();
 }
@@ -67,7 +66,6 @@ void HistogramWidget::paintGL(){
     m_histogramProgram.enableAttributeArray(location);
     m_histogramProgram.setAttributeBuffer(location,GL_FLOAT,0,3,sizeof(QVector3D));
     float widthMult = m_width/227.f;
-    qDebug() << widthMult;
     m_histogramProgram.setUniformValue("width",widthMult);
 
     Geometry::instance()->drawQuad();
