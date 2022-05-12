@@ -1,3 +1,8 @@
+### Controls
+WASD - to pan the camera in volume renderer
+Home - resets camera
+Double Click - place point light at cursor position
+
 ### 3D View
 Our 3D view uses Raymarching to display a volumetric rendering of the volume.
 
@@ -16,3 +21,4 @@ Our histogram shows where the values of the model are, lined up with the transfe
 
 ## Build instructions
 The project should work out of the box using Qt 6.2.2 on windows
+
