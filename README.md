@@ -1,6 +1,10 @@
 ### Controls
 WASD - to pan the camera in volume renderer
+
+
 Home - resets camera
+
+
 Double Click - place point light at cursor position
 
 ### 3D View
