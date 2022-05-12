@@ -15,4 +15,4 @@ The cross section view has two sliders, one to change the axis, and one to chang
 Our histogram shows where the values of the model are, lined up with the transfer function
 
 ## Build instructions
-The project should work out of the box using Qt on windows
+The project should work out of the box using Qt 6.2.2 on windows
